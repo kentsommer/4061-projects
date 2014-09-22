@@ -18,7 +18,10 @@ int parse(char * lpszFileName)
 	char szLine[1024];
 	char * lpszLine;
 	char * lpszLinec; 
-	char * lpszLinechop;
+	char *strArray[1024];
+	char * tofree;
+	char * token;
+	char * dependencies;
 	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
 	
@@ -44,22 +47,22 @@ int parse(char * lpszFileName)
 		fstarget = strtok(lpszLinec, ":");
 		
 		//Compare original to target, if equal, line is not a target line. 
-		if (strlen(lpszLine) == strlen(lpszLinec)) 
+		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			//fprintf(stderr, "Sizes are the same! \n");
-		}
-		else
-		{
-			lpszLinechop = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
+			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			fprintf(stderr, "Token Line found \"%s\"\n", fstarget);
-			strcpy(lpszLinechop, lpszLine);
+			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
-			lpszLinechop += chopnum; //remove target name (point addition because baller)
-			fprintf(stderr, "Dependencies are: \"%s\"\n", lpszLinechop);
+			dependencies += chopnum; //remove target name (point addition because baller)
+			fprintf(stderr, "Dependencies are: \"%s\"\n", dependencies);
+			
+			tofree = (char *) malloc(1024); //REMOVE ME WHYYYYYY
+			strcpy(tofree, dependencies);
+			while((token = strsep(&dependencies, " ")) != NULL)
+			{
+				printf("Token is: %s\n", token);
+			}
 		}
-
-
-
 		//You need to check below for parsing. 
 		//Skip if blank or comment.
 		//Remove leading whitespace.
