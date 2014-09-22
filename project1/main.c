@@ -9,6 +9,8 @@
 
 #include "util.h"
 
+
+//This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
 {
