@@ -17,7 +17,13 @@ int parse(char * lpszFileName)
 	int nLine=0;
 	char szLine[1024];
 	char * lpszLine;
+	char * lpszLinec; 
+	char * lpszLinechop;
+	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
+	
+	//String tokin (tokin get it??)
+	char * fstarget;
 
 	if(fp == NULL)
 	{
@@ -33,6 +39,26 @@ int parse(char * lpszFileName)
 
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n"); 
+		//Make a copy of the string and remove anything before token ":"
+		strcpy(lpszLinec, lpszLine);
+		fstarget = strtok(lpszLinec, ":");
+		
+		//Compare original to target, if equal, line is not a target line. 
+		if (strlen(lpszLine) == strlen(lpszLinec)) 
+		{
+			//fprintf(stderr, "Sizes are the same! \n");
+		}
+		else
+		{
+			lpszLinechop = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
+			fprintf(stderr, "Token Line found \"%s\"\n", fstarget);
+			strcpy(lpszLinechop, lpszLine);
+			chopnum = strlen(fstarget) + 2; 
+			lpszLinechop += chopnum; //remove target name (point addition because baller)
+			fprintf(stderr, "Dependencies are: \"%s\"\n", lpszLinechop);
+		}
+
+
 
 		//You need to check below for parsing. 
 		//Skip if blank or comment.
@@ -74,6 +100,10 @@ int main(int argc, char **argv)
 	char szMakefile[64] = "Makefile";
 	char szTarget[64];
 	char szLog[64];
+	
+	//parse(szMakefile); 
+	
+	fprintf(stderr, "File is called: %s \n", szMakefile);
 
 	while((ch = getopt(argc, argv, format)) != -1) 
 	{
