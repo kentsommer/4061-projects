@@ -10,6 +10,9 @@
 #include "util.h"
 
 
+//FLAGS 
+int printcmds = 0; //This is global flag for print commands only (if -n)
+
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
@@ -30,6 +33,11 @@ int parse(char * lpszFileName)
 	if(fp == NULL)
 	{
 		return -1;
+	}
+
+	if(printcmds == 1)
+	{
+		fprintf(stderr, "We only want to print commands, not run \n");
 	}
 
 	while(file_getline(szLine, fp) != NULL) 
@@ -114,6 +122,7 @@ int main(int argc, char **argv)
 				strcpy(szMakefile, strdup(optarg));
 				break;
 			case 'n':
+				printcmds = 1;
 				break;
 			case 'B':
 				break;
@@ -126,7 +135,7 @@ int main(int argc, char **argv)
 				exit(1);
 		}
 	}
-	
+
 	fprintf(stderr, "File is called: %s \n", szMakefile);
 
 	argc -= optind;
