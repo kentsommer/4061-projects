@@ -18,7 +18,6 @@ int parse(char * lpszFileName)
 	char szLine[1024];
 	char * lpszLine;
 	char * lpszLinec; 
-	char *strArray[1024];
 	char * tofree;
 	char * token;
 	char * dependencies;
@@ -42,6 +41,7 @@ int parse(char * lpszFileName)
 
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n"); 
+		lpszLinec = (char *) malloc(1024);
 		//Make a copy of the string and remove anything before token ":"
 		strcpy(lpszLinec, lpszLine);
 		fstarget = strtok(lpszLinec, ":");
@@ -105,8 +105,6 @@ int main(int argc, char **argv)
 	char szLog[64];
 	
 	//parse(szMakefile); 
-	
-	fprintf(stderr, "File is called: %s \n", szMakefile);
 
 	while((ch = getopt(argc, argv, format)) != -1) 
 	{
@@ -128,6 +126,8 @@ int main(int argc, char **argv)
 				exit(1);
 		}
 	}
+	
+	fprintf(stderr, "File is called: %s \n", szMakefile);
 
 	argc -= optind;
 	argv += optind;
