@@ -26,6 +26,7 @@ int parse(char * lpszFileName)
 	char * dependencies;
 	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
+	FILE * deps = fopen("deps", "a"); 
 	
 	//String tokin (tokin get it??)
 	char * fstarget;
@@ -68,7 +69,9 @@ int parse(char * lpszFileName)
 			strcpy(tofree, dependencies);
 			while((token = strsep(&dependencies, " ")) != NULL)
 			{
-				printf("Token is: %s\n", token);
+				fputs(token, deps);
+				fputs("\n", deps);
+				printf("Token is: \"%s\"\n", token);
 			}
 		}
 		//You need to check below for parsing. 
@@ -82,8 +85,9 @@ int parse(char * lpszFileName)
 		//You can use any data structure (array, linked list ...) as you want to build a graph
 	}
 
-	//Close the makefile. 
+	//Close the makefile and deps file
 	fclose(fp);
+	fclose(deps);
 
 	return 0;
 }
