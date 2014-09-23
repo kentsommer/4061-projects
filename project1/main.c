@@ -27,6 +27,7 @@ int parse(char * lpszFileName)
 	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
 	FILE * deps = fopen("deps", "a"); 
+	FILE * targs = fopen("targs", "a");
 	
 	//String tokin (tokin get it??)
 	char * fstarget;
@@ -58,8 +59,12 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			fprintf(stderr, "Token Line found \"%s\"\n", fstarget);
+			fputs(fstarget, targs);
+			fputs("\n", targs);
+
+
+			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
 			dependencies += chopnum; //remove target name (point addition because baller)
@@ -85,9 +90,10 @@ int parse(char * lpszFileName)
 		//You can use any data structure (array, linked list ...) as you want to build a graph
 	}
 
-	//Close the makefile and deps file
+	//Close the makefile and deps and targs file
 	fclose(fp);
 	fclose(deps);
+	fclose(targs);
 
 	return 0;
 }
