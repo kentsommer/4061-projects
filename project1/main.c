@@ -13,6 +13,16 @@
 //FLAGS 
 int printcmds = 0; //This is global flag for print commands only (if -n)
 
+//Structs
+typedef struct target
+{
+	int status; //Status (running, waiting, ready etc)
+	int linenum; //Line number of target
+	int children[10]; //Children line numbers (max of 10) (dependencies)
+	int parents[10]; //Parents line numbers (max of 10)
+	pid_t pid; 
+} target_t;
+
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
