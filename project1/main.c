@@ -13,16 +13,6 @@
 //FLAGS 
 int printcmds = 0; //This is global flag for print commands only (if -n)
 
-//Structs
-typedef struct target_n
-{
-	int status; //Status (running, waiting, ready etc)
-	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
-	int children[10]; //Children line numbers (max of 10) (dependencies)
-	int parents[10]; //Parents line numbers (max of 10)
-	pid_t pid; 
-} target_n;
-
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
@@ -55,6 +45,11 @@ int parse(char * lpszFileName)
 	while(file_getline(szLine, fp) != NULL) 
 	{
 		nLine++;
+
+		struct target current_target; //This will be used to fill current
+				// Target information and save to some list/array
+
+
 		// this loop will go through the given file, one line at a time
 		// this is where you need to do the work of interpreting
 		// each line of the file to be able to deal with it later
@@ -117,6 +112,24 @@ void show_error_message(char * lpszFileName)
 	fprintf(stderr, "-B\t\tDon't check files timestamps.\n");
 	fprintf(stderr, "-m FILE\t\tRedirect the output to the file specified .\n");
 	exit(0);
+}
+
+void print_target(target_t * target)
+{
+	int p, c;
+	printf("ID is: %d\n", target->linenum);
+	printf("Status is: %d\n", target->status);
+	printf("PID is: %d\n", target->pid);
+	printf("Parents are: \n");
+	for(p = 0; p < target->numparent; p++)
+	{
+		printf("%d\n", target->parents[p]);
+	}
+	printf("Children are: \n");
+	for(c = 0; c < target->numchild; c++)
+	{
+		printf("%d\n", target->children[c]);
+	}
 }
 
 int main(int argc, char **argv) 
