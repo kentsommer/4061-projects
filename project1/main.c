@@ -14,14 +14,14 @@
 int printcmds = 0; //This is global flag for print commands only (if -n)
 
 //Structs
-typedef struct target
+typedef struct target_n
 {
 	int status; //Status (running, waiting, ready etc)
-	int linenum; //Line number of target
+	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
 	int children[10]; //Children line numbers (max of 10) (dependencies)
 	int parents[10]; //Parents line numbers (max of 10)
 	pid_t pid; 
-} target_t;
+} target_n;
 
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
@@ -69,7 +69,7 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			fprintf(stderr, "Token Line found \"%s\"\n", fstarget);
+			fprintf(stderr, "Token \"%s\" found at line: %d\n", fstarget, nLine);
 			fputs(fstarget, targs);
 			fputs("\n", targs);
 
