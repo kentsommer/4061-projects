@@ -118,7 +118,7 @@ bool isCompilable(struct target * targetToCheck)
  }
 
 
- bool hasDeps(struct target targetsArray[], int size)
+ bool isReady(struct target targetsArray[], int size)
  {
    int i =0;
    while(i < size)
@@ -132,7 +132,7 @@ bool isCompilable(struct target * targetToCheck)
          {
             if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
             {
-               return true;
+               return false;
             }
             z++;
          }
@@ -140,7 +140,7 @@ bool isCompilable(struct target * targetToCheck)
       }
       i++;
    }
-   return false;
+   return true;
  }
 
 
