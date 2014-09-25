@@ -46,10 +46,9 @@ int parse(char * lpszFileName)
 	{
 		nLine++;
 
-		struct target *current = malloc(sizeof(struct target));
+		struct target *current = malloc(sizeof(struct target) * 1024);
 		 //This will be used to fill current
 				// Target information and save to some list/array
-
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n"); 
 		lpszLinec = (char *) malloc(1024);
@@ -58,7 +57,7 @@ int parse(char * lpszFileName)
 		fstarget = strtok(lpszLinec, ":");
 		
 		//Compare original to target, if equal, line is not a target line. 
-		if (isTarget(lpszLine)) 
+		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
 			fprintf(stderr, "Target \"%s\" found at line: %d\n", fstarget, nLine);
 
@@ -77,6 +76,7 @@ int parse(char * lpszFileName)
 				{
 					current->children[dep_index] = token;
 					printf("Dependes on: \"%s\"\n", current->children[dep_index]);
+					dep_index++;
 				}
 			}
 		}
