@@ -61,17 +61,25 @@ int get_file_modification_time(char * lpszFileName)
 }
 
 //Prints the target information including runstatus and dependencies
-void print_target(target_t * target)
+void print_target(struct target * target)
 {
-   int p, c;
-   printf("ID is: %d\n", target->linenum);
+   printf("\n");
+   int d, c;
+   printf("Target is %s\n", target->name);
    printf("Status is: %d\n", target->status);
-   printf("PID is: %d\n", target->pid);
-   printf("Children are: \n");
-   for(c = 0; c < target->numchild; c++)
+   printf("LineNum is: %d\n", target->linenum);
+   printf("Dependencies are: \n");
+   for(d = 0; d < target->numchild; d++)
    {
-      printf("%s\n", target->deps[c]);
+      printf("\t%s\n", target->deps[c]);
    }
+   printf("PID is: %d\n", target->pid);
+   printf("Commands are: \n");
+   for(c = 0; c < target->numcmd; c++)
+   {
+      printf("\t%s\n", target->commands[c]);
+   }
+   printf("\n");
 }
 
 bool isTarget(char * lpszLine)

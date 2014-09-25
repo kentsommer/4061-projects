@@ -211,21 +211,22 @@ int main(int argc, char **argv)
 	int i = 0;
 	while(i < targetnum)
 	{
-		int y = 0;
-		int c = 0;
-		printf("Target is: %s\n", targets[i].name);
-		while(y < targets[i].numchild)
-		{
-			printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].deps[y]);
-			y++;
-		}
-		printf("Target \"%s\" has %d commands\n", targets[i].name, targets[i].numcmd);
-		while(c < targets[i].numcmd)
-		{
-			printf("Commands for \"%s\" are: %s\n",targets[i].name, targets[i].commands[c]);
-			c++;
-		}
-		i++;
+		print_target(&targets[i]);
+		// int y = 0;
+		// int c = 0;
+		// printf("Target is: %s\n", targets[i].name);
+		// while(y < targets[i].numchild)
+		// {
+		// 	printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].deps[y]);
+		// 	y++;
+		// }
+		// printf("Target \"%s\" has %d commands\n", targets[i].name, targets[i].numcmd);
+		// while(c < targets[i].numcmd)
+		// {
+		// 	printf("Commands for \"%s\" are: %s\n",targets[i].name, targets[i].commands[c]);
+		// 	c++;
+		// }
+		 i++;
 	}
 
 	printf("Is ready: %d\n", isReady(targets, targetnum));

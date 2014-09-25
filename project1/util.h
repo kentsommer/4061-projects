@@ -42,10 +42,10 @@ int areDependenciesCompiled(char * children[]);
 
 //You will need to fill this struct out to make a graph.
 typedef struct target{
+	char * name;
 	int status; //Status (uncompiled 0, compiled 1 etc)
 	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
 	char * deps[MAX_DEPENDENCIES]; //Children line numbers (max of 10) (dependencies)
-	char * name;
 	pid_t pid; 
 	int numparent; //Number of parent targets
 	int numchild; //Number of child targets
@@ -55,5 +55,6 @@ typedef struct target{
 }target_t;
 
 bool isReady(struct target targetsArray[], int size);
+void print_target(struct target * target);
 
 #endif
