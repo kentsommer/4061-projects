@@ -49,6 +49,7 @@ typedef struct target{
 	pid_t pid; 
 	int numparent; //Number of parent targets
 	int numchild; //Number of child targets
+	bool hasDeps; //
 }target_t;
 
 #endif

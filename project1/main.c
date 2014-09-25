@@ -46,8 +46,8 @@ int parse(char * lpszFileName)
 	{
 		nLine++;
 
-		struct target current;
-		current = (struct target) malloc(1024); //This will be used to fill current
+		struct target *current = malloc(sizeof(struct target));
+		 //This will be used to fill current
 				// Target information and save to some list/array
 
 		//Remove newline character at end if there is one
@@ -75,8 +75,8 @@ int parse(char * lpszFileName)
 			{
 				if(strcmp(token, "") != 0)
 				{
-					current.children[dep_index] = token;
-					printf("Dependes on: \"%s\"\n", current.children[dep_index]);
+					current->children[dep_index] = token;
+					printf("Dependes on: \"%s\"\n", current->children[dep_index]);
 				}
 			}
 		}
