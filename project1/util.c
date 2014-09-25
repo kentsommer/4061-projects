@@ -90,28 +90,30 @@ bool isTarget(char * lpszLine)
 }
 //return 0, uncompilable
 //return 1, compiable 
-int isCompilable(struct target * targetToCheck)
+bool isCompilable(struct target * targetToCheck)
 {
    if(targetToCheck->status==1)
    {
-    return 0;
+    return false;
    }
    if(targetToCheck->status==0)
    {
         if (areDependenciesCompiled(targetToCheck->deps)==1)
         {
-           //that node is good to compile, but we need first pause all program to make sure we do it right
+            return true;
         }
    }
 
-   return 0;
+   return false;
  }
 
 //return 0 if not all dependencies are  all compiled or lost file
 //return 1 if all dependencies are compiled and file exist
  int areDependenciesCompiled(char * children[])
  {
-      
+      for (int i = 0; i < sizeof(children)/sizeof(char); ++i)
+      {
+       }
 
  }
 

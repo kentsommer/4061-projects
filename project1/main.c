@@ -134,7 +134,6 @@ int main(int argc, char **argv)
 	char szMakefile[64] = "Makefile";
 	char szTarget[64];
 	char szLog[64];
-	
 	//parse(szMakefile); 
 
 	while((ch = getopt(argc, argv, format)) != -1) 
