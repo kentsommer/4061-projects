@@ -52,4 +52,6 @@ typedef struct target{
 
 }target_t;
 
+bool hasDeps(struct target targetsArray[], int size);
+
 #endif

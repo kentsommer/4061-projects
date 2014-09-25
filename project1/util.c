@@ -94,7 +94,7 @@ int isCompilable(struct target * targetToCheck)
 {
    if(targetToCheck->status==1)
    {
-    return 0;
+      return 0;
    }
    if(targetToCheck->status==0)
    {
@@ -113,6 +113,32 @@ int isCompilable(struct target * targetToCheck)
  {
       
 
+ }
+
+
+ bool hasDeps(struct target targetsArray[], int size)
+ {
+   int i =0;
+   while(i < size)
+   {
+      struct target current = targetsArray[i];
+      int y = 0;
+      while(y < targetsArray[i].numchild)
+      {
+         int z = 0;
+         while(z < size)
+         {
+            if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
+            {
+               return true;
+            }
+            z++;
+         }
+         y++;
+      }
+      i++;
+   }
+   return false;
  }
 
 

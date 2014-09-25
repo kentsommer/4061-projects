@@ -205,6 +205,8 @@ int main(int argc, char **argv)
 		}
 		i++;
 	}
+
+	printf("Does have deps: %d\n", hasDeps(targets, targetnum));
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
 	return EXIT_SUCCESS;
