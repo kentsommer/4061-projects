@@ -12,11 +12,14 @@
 
 //FLAGS 
 int printcmds = 0; //This is global flag for print commands only (if -n)
-
+int setfirstTarg = 1;
+int targetset = false;
+int hasOpt = 0;
 //Array holder
 struct target targets[MAX_TARGETS];
 int targetnum=0;
 int cmd_index=0;
+char * szTarget;
 
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
@@ -68,12 +71,15 @@ int parse(char * lpszFileName)
 		char key[] = {'\t'};
         if (strpbrk (lpszLine, key) != NULL)
         {
-        	cmdLine = (char *) malloc(1024);
-        	strcpy(cmdLine, lpszLine);
-        	cmdLine = cmdLine + 1; //Remove tab char
-        	targets[targetnum-1].commands[cmd_index] = cmdLine;
-        	cmd_index++;
-        	targets[targetnum-1].numcmd = cmd_index;
+        	if(targets[targetnum-1].name != NULL)
+        	{
+        		cmdLine = (char *) malloc(1024);
+        		strcpy(cmdLine, lpszLine);
+        		cmdLine = cmdLine + 1; //Remove tab char
+        		targets[targetnum-1].commands[cmd_index] = cmdLine;
+        		cmd_index++;
+        		targets[targetnum-1].numcmd = cmd_index;
+        	}
         }
         
 		lpszLinec = (char *) malloc(1024);
@@ -84,9 +90,15 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			cmd_index = 0;
-			current->name = fstarget;
-			current->linenum = nLine;
+			if(setfirstTarg == 1 && targetset == false) //target not set, setting to first target
+			{
+				szTarget = (char *) malloc(64);
+				szTarget = fstarget;
+				targetset = true;
+			}
+			cmd_index = 0; //Reset number of commands for new target
+			current->name = fstarget; //Set target name
+			current->linenum = nLine; //Set target linenum
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
@@ -105,7 +117,11 @@ int parse(char * lpszFileName)
 				}
 			}
 			current->numchild = dep_index;
-			targets[targetnum] = *current;
+			if(isIndependent(*current, targets, targetnum)) //This needs to be updated
+			{    							     //To allow for target specification
+				targets[targetnum] = *current;
+			}
+			//targets[targetnum] = *current;
 			targetnum++;
 		}
 
@@ -149,7 +165,6 @@ int main(int argc, char **argv)
 	
 	// Default makefile name will be Makefile
 	char szMakefile[64] = "Makefile";
-	char szTarget[64];
 	char szLog[64];
 	//parse(szMakefile); 
 
@@ -159,14 +174,18 @@ int main(int argc, char **argv)
 		{
 			case 'f':
 				strcpy(szMakefile, strdup(optarg));
+				hasOpt = 1;
 				break;
 			case 'n':
 				printcmds = 1;
+				hasOpt = 1;
 				break;
 			case 'B':
+				hasOpt = 1;
 				break;
 			case 'm':
 				strcpy(szLog, strdup(optarg));
+				hasOpt = 1;
 				break;
 			case 'h':
 			default:
@@ -175,7 +194,14 @@ int main(int argc, char **argv)
 		}
 	}
 
-	fprintf(stderr, "File is called: %s \n", szMakefile);
+	//Checks if target is set via cmd line or if should grab first target
+	if(hasOpt != 1 && argc > 1)
+	{
+		szTarget = (char *) malloc(64);
+		setfirstTarg = 0;
+		szTarget = argv[1];
+		targetset = true;
+	}
 
 	argc -= optind;
 	argv += optind;
@@ -208,7 +234,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	//printf("Number of targets %d\n", targetnum);
-
+	printf("MAIN Target is: %s\n", szTarget);
 	int i = 0;
 	while(i < targetnum)
 	{
