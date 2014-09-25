@@ -20,6 +20,7 @@
 #define READY 1
 #define RUNNING 2
 #define FINISHED 3
+#define SKIP 4
 
 #define MAX_LENGTH 1024
 #define MAX_DEPENDENCIES 10

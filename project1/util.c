@@ -121,7 +121,6 @@ bool isTarget(char * lpszLine)
 
                if(targetsArray[z].status == INELIGIBLE)
                {
-                  printf("Status is: %d for %s\n", targetsArray[z].status, targetsArray[z].name);
                   return false;
                }
             }
@@ -132,7 +131,6 @@ bool isTarget(char * lpszLine)
       targetsArray[i].status = READY;
       i++;
    }
-   printf("Status of 0 is: %d\n", targetsArray[0].status);
    return true;
  }
 
