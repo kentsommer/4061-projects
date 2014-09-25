@@ -11,6 +11,10 @@
 #include <string.h>
 #include <unistd.h>
 
+//Vars
+char * lpszLinec; 
+char * fstarget;
+
 /***************
  * These functions are just some handy file functions.
  * We have not yet covered opening and reading from files in C,
@@ -54,6 +58,40 @@ int get_file_modification_time(char * lpszFileName)
 	}
 	
 	return -1;
+}
+
+//Prints the target information including runstatus and dependencies
+void print_target(target_t * target)
+{
+   int p, c;
+   printf("ID is: %d\n", target->linenum);
+   printf("Status is: %d\n", target->status);
+   printf("PID is: %d\n", target->pid);
+   printf("Parents are: \n");
+   for(p = 0; p < target->numparent; p++)
+   {
+      printf("%s\n", target->parents[p]);
+   }
+   printf("Children are: \n");
+   for(c = 0; c < target->numchild; c++)
+   {
+      printf("%s\n", target->children[c]);
+   }
+}
+
+bool isTarget(char * lpszLine)
+{
+   lpszLinec = (char *) malloc(1024);
+   //Make a copy of the string and remove anything before token ":"
+   strcpy(lpszLinec, lpszLine);
+   fstarget = strtok(lpszLinec, ":");
+   if (strlen(lpszLine) != strlen(fstarget))
+   {
+      free(lpszLinec);
+      return true; 
+   }
+   free(lpszLinec);
+   return false;
 }
 
 //Compare the last modified time between two files.

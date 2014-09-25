@@ -46,13 +46,9 @@ int parse(char * lpszFileName)
 	{
 		nLine++;
 
-		struct target current_target; //This will be used to fill current
+		struct target current;
+		current = (struct target) malloc(1024); //This will be used to fill current
 				// Target information and save to some list/array
-
-
-		// this loop will go through the given file, one line at a time
-		// this is where you need to do the work of interpreting
-		// each line of the file to be able to deal with it later
 
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n"); 
@@ -62,26 +58,26 @@ int parse(char * lpszFileName)
 		fstarget = strtok(lpszLinec, ":");
 		
 		//Compare original to target, if equal, line is not a target line. 
-		if (strlen(lpszLine) != strlen(fstarget)) 
+		if (isTarget(lpszLine)) 
 		{
-			fprintf(stderr, "Token \"%s\" found at line: %d\n", fstarget, nLine);
-			fputs(fstarget, targs);
-			fputs("\n", targs);
-
+			fprintf(stderr, "Target \"%s\" found at line: %d\n", fstarget, nLine);
 
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
 			dependencies += chopnum; //remove target name (point addition because baller)
-			fprintf(stderr, "Dependencies are: \"%s\"\n", dependencies);
+			//fprintf(stderr, "Dependencies are: \"%s\"\n", dependencies);
 			
 			tofree = (char *) malloc(1024); //REMOVE ME WHYYYYYY
 			strcpy(tofree, dependencies);
+			int dep_index = 0; 
 			while((token = strsep(&dependencies, " ")) != NULL)
 			{
-				fputs(token, deps);
-				fputs("\n", deps);
-				printf("Token is: \"%s\"\n", token);
+				if(strcmp(token, "") != 0)
+				{
+					current.children[dep_index] = token;
+					printf("Dependes on: \"%s\"\n", current.children[dep_index]);
+				}
 			}
 		}
 		//You need to check below for parsing. 
@@ -112,24 +108,6 @@ void show_error_message(char * lpszFileName)
 	fprintf(stderr, "-B\t\tDon't check files timestamps.\n");
 	fprintf(stderr, "-m FILE\t\tRedirect the output to the file specified .\n");
 	exit(0);
-}
-
-void print_target(target_t * target)
-{
-	int p, c;
-	printf("ID is: %d\n", target->linenum);
-	printf("Status is: %d\n", target->status);
-	printf("PID is: %d\n", target->pid);
-	printf("Parents are: \n");
-	for(p = 0; p < target->numparent; p++)
-	{
-		printf("%d\n", target->parents[p]);
-	}
-	printf("Children are: \n");
-	for(c = 0; c < target->numchild; c++)
-	{
-		printf("%d\n", target->children[c]);
-	}
 }
 
 int main(int argc, char **argv) 
