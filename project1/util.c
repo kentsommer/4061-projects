@@ -88,34 +88,30 @@ bool isTarget(char * lpszLine)
    free(lpszLinec);
    return false;
 }
-//return 0, uncompilable
-//return 1, compiable 
-bool isCompilable(struct target * targetToCheck)
+//return -1, unkown error
+//return 0, uncompilable for now(need compiled depenedecies)
+//return 1, compilable(let's do that shit)
+//return 2, already compiled
+int isCompilable(struct target * targetToCheck)
 {
-   if(targetToCheck->status==1)
+   if(targetToCheck->status==1) //if target is already compiled, return 2
    {
-    return false;
-   }
-   if(targetToCheck->status==0)
-   {
-        if (areDependenciesCompiled(targetToCheck->deps)==1)
-        {
-            return true;
-        }
+    return 2;
    }
 
-   return false;
+   if(targetToCheck->status==0)
+   {
+        if (isReady(targetToCheck->deps)==1)
+        {
+            return 1;
+        }
+        else return 0;
+   }
+   return -1;
  }
 
 //return 0 if not all dependencies are  all compiled or lost file
 //return 1 if all dependencies are compiled and file exist
- int areDependenciesCompiled(char * children[])
- {
-      for (int i = 0; i < sizeof(children)/sizeof(char); ++i)
-      {
-       }
-
- }
 
 
  bool isReady(struct target targetsArray[], int size)
