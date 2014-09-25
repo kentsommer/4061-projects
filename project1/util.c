@@ -120,10 +120,10 @@ bool isCompilable(struct target * targetToCheck)
 
  bool isReady(struct target targetsArray[], int size)
  {
+   struct target *result = targetsArray;
    int i =0;
    while(i < size)
    {
-      struct target current = targetsArray[i];
       int y = 0;
       while(y < targetsArray[i].numchild)
       {
@@ -132,14 +132,20 @@ bool isCompilable(struct target * targetToCheck)
          {
             if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
             {
-               return false;
+               if(targetsArray[z].status == INELIGIBLE)
+               {
+                  printf("Status is: %d for %s\n", targetsArray[z].status, targetsArray[z].name);
+                  return false;
+               }
             }
             z++;
          }
          y++;
       }
+      result[i].status = READY;
       i++;
    }
+   printf("Status of 0 is: %d\n", result[0].status);
    return true;
  }
 
