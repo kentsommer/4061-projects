@@ -98,7 +98,7 @@ int isCompilable(struct target * targetToCheck)
    }
    if(targetToCheck->status==0)
    {
-        if (areDependenciesCompiled(targetToCheck->children)==1)
+        if (areDependenciesCompiled(targetToCheck->deps)==1)
         {
            //that node is good to compile, but we need first pause all program to make sure we do it right
         }
