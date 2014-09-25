@@ -95,7 +95,6 @@ bool isTarget(char * lpszLine)
 
  bool isReady(struct target targetsArray[], int size)
  {
-   struct target *result = targetsArray;
    int i =0;
    while(i < size)
    {
@@ -106,7 +105,12 @@ bool isTarget(char * lpszLine)
          while(z < size)
          {
             if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
-            {
+            { 
+               if(targetsArray[z].status == FINISHED)
+               {
+                  targetsArray[i].status = READY;
+               }
+
                if(targetsArray[z].status == INELIGIBLE)
                {
                   printf("Status is: %d for %s\n", targetsArray[z].status, targetsArray[z].name);
@@ -117,10 +121,10 @@ bool isTarget(char * lpszLine)
          }
          y++;
       }
-      result[i].status = READY;
+      targetsArray[i].status = READY;
       i++;
    }
-   printf("Status of 0 is: %d\n", result[0].status);
+   printf("Status of 0 is: %d\n", targetsArray[0].status);
    return true;
  }
 

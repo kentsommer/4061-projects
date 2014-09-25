@@ -54,12 +54,20 @@ int parse(char * lpszFileName)
 		 //This will be used to fill current
 				// Target information and save to some list/array
         
-        if (strcmp(szLine, "\n") == 0) {
+        if (strcmp(szLine, "\n") == 0) 
+        {
             //printf("empty line\n");
             continue;
         }
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n");
+
+		//check if it is a command line
+		char key[] = {'\t'};
+        if (strpbrk (szLine, key) != NULL)
+        {
+        	printf("Line %d starts with tab \"%s\"\n", nLine, lpszLine);
+        }
         
 		lpszLinec = (char *) malloc(1024);
 		//Make a copy of the string and remove anything before token ":"
@@ -190,7 +198,7 @@ int main(int argc, char **argv)
 	{
 		return EXIT_FAILURE;
 	}
-	printf("Number of targets %d\n", targetnum);
+	//printf("Number of targets %d\n", targetnum);
 
 	int i = 0;
 	int y = 0;
