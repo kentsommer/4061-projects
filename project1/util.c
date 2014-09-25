@@ -88,6 +88,33 @@ bool isTarget(char * lpszLine)
    free(lpszLinec);
    return false;
 }
+//return 0, uncompilable
+//return 1, compiable 
+int isCompilable(target_t * targetToCheck)
+{
+   if(targetToCheck->status==1)
+   {
+    return 0;
+   }
+   if(targetToCheck->status==0)
+   {
+        if (areDependenciesCompiled(targetToCheck->children)==1)
+        {
+           //that node is good to compile, but we need first pause all program to make sure we do it right
+        }
+   }
+
+   return 0;
+ }
+
+//return 0 if not all dependencies are  all compiled or lost file
+//return 1 if all dependencies are compiled and file exist
+ int areDependenciesCompiled(char * children)
+ {
+      
+
+ }
+
 
 //Compare the last modified time between two files.
 //return -1, if any one of file does not exist. 
