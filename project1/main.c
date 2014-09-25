@@ -55,7 +55,7 @@ int parse(char * lpszFileName)
 				// Target information and save to some list/array
         
         if (strcmp(szLine, "\n") == 0) {
-            printf("empty line\n");
+            //printf("empty line\n");
             continue;
         }
 		//Remove newline character at end if there is one
@@ -69,7 +69,6 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			fprintf(stderr, "Target \"%s\" found at line: %d\n", fstarget, nLine);
 			current->name = fstarget;
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
@@ -85,10 +84,10 @@ int parse(char * lpszFileName)
 				if(strcmp(token, "") != 0)
 				{
 					current->children[dep_index] = token;
-					printf("Dependes on: \"%s\"\n", current->children[dep_index]);
 					dep_index++;
 				}
 			}
+			current->numchild = dep_index;
 			targets[targetnum] = *current;
 			targetnum++;
 		}
@@ -195,11 +194,15 @@ int main(int argc, char **argv)
 	printf("Number of targets %d\n", targetnum);
 
 	int i = 0;
+	int y = 0;
 	while(i < targetnum)
 	{
 		printf("Target is: %s\n", targets[i].name);
-		printf("Dependencies are: %s\n", targets[i].children[0]);
-		printf("Dependencies are: %s\n", targets[i].children[1]);
+		while(y < targets[i].numchild)
+		{
+			printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].children[y]);
+			y++;
+		}
 		i++;
 	}
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
