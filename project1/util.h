@@ -24,6 +24,7 @@
 #define MAX_LENGTH 1024
 #define MAX_DEPENDENCIES 10
 #define MAX_TARGETS 10
+#define MAX_COMMANDS 10
 
  //Use booleans
 typedef enum { false, true } bool;
@@ -48,8 +49,9 @@ typedef struct target{
 	pid_t pid; 
 	int numparent; //Number of parent targets
 	int numchild; //Number of child targets
+	int numcmd;
 	bool hasDeps; //
-
+	char * commands[MAX_COMMANDS];
 }target_t;
 
 bool isReady(struct target targetsArray[], int size);

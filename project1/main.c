@@ -16,6 +16,7 @@ int printcmds = 0; //This is global flag for print commands only (if -n)
 //Array holder
 struct target targets[MAX_TARGETS];
 int targetnum=0;
+int cmd_index=0;
 
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
@@ -25,6 +26,7 @@ int parse(char * lpszFileName)
 	char szLine[1024];
 	char * lpszLine;
 	char * lpszLinec; 
+	char * cmdLine;
 	char * tofree;
 	char * token;
 	char * dependencies;
@@ -62,11 +64,15 @@ int parse(char * lpszFileName)
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n");
 
-		//check if it is a command line
+		//check if it is a command line and add to the proper target
 		char key[] = {'\t'};
-        if (strpbrk (szLine, key) != NULL)
+        if (strpbrk (lpszLine, key) != NULL)
         {
-        	printf("Line %d starts with tab \"%s\"\n", nLine, lpszLine);
+        	cmdLine = (char *) malloc(1024);
+        	strcpy(cmdLine, lpszLine);
+        	targets[targetnum-1].commands[cmd_index] = cmdLine;
+        	cmd_index++;
+        	targets[targetnum-1].numcmd = cmd_index;
         }
         
 		lpszLinec = (char *) malloc(1024);
@@ -77,6 +83,7 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
+			cmd_index = 0;
 			current->name = fstarget;
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
@@ -201,14 +208,21 @@ int main(int argc, char **argv)
 	//printf("Number of targets %d\n", targetnum);
 
 	int i = 0;
-	int y = 0;
 	while(i < targetnum)
 	{
+		int y = 0;
+		int c = 0;
 		printf("Target is: %s\n", targets[i].name);
 		while(y < targets[i].numchild)
 		{
 			printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].deps[y]);
 			y++;
+		}
+		printf("Target \"%s\" has %d commands\n", targets[i].name, targets[i].numcmd);
+		while(c < targets[i].numcmd)
+		{
+			printf("Commands for \"%s\" are: %s\n",targets[i].name, targets[i].commands[c]);
+			c++;
 		}
 		i++;
 	}
