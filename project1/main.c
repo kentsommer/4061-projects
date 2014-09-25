@@ -13,6 +13,10 @@
 //FLAGS 
 int printcmds = 0; //This is global flag for print commands only (if -n)
 
+//Array holder
+struct target targets[MAX_TARGETS];
+int targetnum=0;
+
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
@@ -66,7 +70,7 @@ int parse(char * lpszFileName)
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
 			fprintf(stderr, "Target \"%s\" found at line: %d\n", fstarget, nLine);
-
+			current->name = fstarget;
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
@@ -85,7 +89,10 @@ int parse(char * lpszFileName)
 					dep_index++;
 				}
 			}
+			targets[targetnum] = *current;
+			targetnum++;
 		}
+
 		//You need to check below for parsing. 
 		//Skip if blank or comment.
 		//Remove leading whitespace.
@@ -185,7 +192,16 @@ int main(int argc, char **argv)
 	{
 		return EXIT_FAILURE;
 	}
+	printf("Number of targets %d\n", targetnum);
 
+	int i = 0;
+	while(i < targetnum)
+	{
+		printf("Target is: %s\n", targets[i].name);
+		printf("Dependencies are: %s\n", targets[i].children[0]);
+		printf("Dependencies are: %s\n", targets[i].children[1]);
+		i++;
+	}
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
 	return EXIT_SUCCESS;

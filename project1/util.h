@@ -46,10 +46,12 @@ typedef struct target{
 	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
 	char * children[MAX_CHILDREN]; //Children line numbers (max of 10) (dependencies)
 	char * parents[MAX_PARENTS]; //Parents line numbers (max of 10)
+	char * name;
 	pid_t pid; 
 	int numparent; //Number of parent targets
 	int numchild; //Number of child targets
 	bool hasDeps; //
+
 }target_t;
 
 #endif
