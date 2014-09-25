@@ -42,7 +42,7 @@ void freemakeargv(char **argv);
 
 //You will need to fill this struct out to make a graph.
 typedef struct target{
-	int status; //Status (running, waiting, ready etc)
+	int status; //Status (uncompiled 0, compiled 1, running 2etc)
 	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
 	char * children[MAX_CHILDREN]; //Children line numbers (max of 10) (dependencies)
 	char * parents[MAX_PARENTS]; //Parents line numbers (max of 10)
