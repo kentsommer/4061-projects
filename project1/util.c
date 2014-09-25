@@ -90,7 +90,7 @@ bool isTarget(char * lpszLine)
 }
 //return 0, uncompilable
 //return 1, compiable 
-int isCompilable(target_t * targetToCheck)
+int isCompilable(struct target * targetToCheck)
 {
    if(targetToCheck->status==1)
    {
@@ -109,7 +109,7 @@ int isCompilable(target_t * targetToCheck)
 
 //return 0 if not all dependencies are  all compiled or lost file
 //return 1 if all dependencies are compiled and file exist
- int areDependenciesCompiled(char * children)
+ int areDependenciesCompiled(char * children[])
  {
       
 

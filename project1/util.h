@@ -37,6 +37,7 @@ int get_file_modification_time(char *);
 int compare_modification_time(char *, char *);
 int makeargv(const char *s, const char *delimiters, char ***argvp);
 void freemakeargv(char **argv);
+int areDependenciesCompiled(char * children[]);
 
 //You will need to fill this struct out to make a graph.
 typedef struct target{
