@@ -52,7 +52,7 @@ int parse(char * lpszFileName)
         
         if (strcmp(szLine, "\n") == 0) {
             printf("empty line\n");
-            //continue;
+            continue;
         }
 		//Remove newline character at end if there is one
 		lpszLine = strtok(szLine, "\n");
