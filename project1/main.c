@@ -86,6 +86,7 @@ int parse(char * lpszFileName)
 		{
 			cmd_index = 0;
 			current->name = fstarget;
+			current->linenum = nLine;
 			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
 			strcpy(dependencies, lpszLine);
 			chopnum = strlen(fstarget) + 2; 
@@ -216,6 +217,13 @@ int main(int argc, char **argv)
 	}
 
 	printf("Is ready: %d\n", isReady(targets, targetnum));
+
+	i = 0;
+	while(i < targetnum)
+	{
+		print_target(&targets[i]);
+		 i++;
+	}
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
 	return EXIT_SUCCESS;

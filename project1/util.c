@@ -121,6 +121,7 @@ bool isTarget(char * lpszLine)
 
                if(targetsArray[z].status == INELIGIBLE)
                {
+                  targetsArray[i].status = INELIGIBLE;
                   return false;
                }
             }
@@ -134,7 +135,30 @@ bool isTarget(char * lpszLine)
    return true;
  }
 
-
+//Checks for targets that aren't tied to anything and shouldn't be run unless called directly
+bool isIndependent(struct target targetsArray[], int size)
+{
+   int i = 0; 
+   while(i < size)
+   {
+      int y = 0;
+      while(y < size)
+      {
+         int z = 0;
+         while(z < targetsArray[y].numchild)
+         {
+            if(strcmp(targetsArray[i].name, targetsArray[y].deps[z]) == 0) //target is linked to something
+            {
+               return false;
+            }
+            z++;
+         }
+         y++;
+      }
+      i++;
+   }
+   return true;
+}
 //Compare the last modified time between two files.
 //return -1, if any one of file does not exist. 
 //return 0, if both modified time is the same.
