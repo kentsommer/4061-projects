@@ -70,6 +70,7 @@ int parse(char * lpszFileName)
         {
         	cmdLine = (char *) malloc(1024);
         	strcpy(cmdLine, lpszLine);
+        	cmdLine = cmdLine + 1; //Remove tab char
         	targets[targetnum-1].commands[cmd_index] = cmdLine;
         	cmd_index++;
         	targets[targetnum-1].numcmd = cmd_index;
