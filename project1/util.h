@@ -56,7 +56,7 @@ typedef struct target{
 }target_t;
 
 bool isReady(struct target targetsArray[], int size);
-bool isIndependent(struct target target, struct target targetsArray[], int size);
+bool isIndependent(struct target target, struct target targetcheck);
 void print_target(struct target * target);
 
 #endif

@@ -35,8 +35,6 @@ int parse(char * lpszFileName)
 	char * dependencies;
 	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
-	FILE * deps = fopen("deps", "a"); 
-	FILE * targs = fopen("targs", "a");
 	
 	//String tokin (tokin get it??)
 	char * fstarget;
@@ -117,11 +115,11 @@ int parse(char * lpszFileName)
 				}
 			}
 			current->numchild = dep_index;
-			if(isIndependent(*current, targets, targetnum)) //This needs to be updated
-			{    							     //To allow for target specification
-				targets[targetnum] = *current;
-			}
-			//targets[targetnum] = *current;
+			// if(isIndependent(mainTarget, *current)) //This needs to be updated
+			// {    							     //To allow for target specification
+			targets[targetnum] = *current;
+			// }
+
 			targetnum++;
 		}
 
@@ -136,10 +134,8 @@ int parse(char * lpszFileName)
 		//You can use any data structure (array, linked list ...) as you want to build a graph
 	}
 
-	//Close the makefile and deps and targs file
+	//Close the makefile
 	fclose(fp);
-	fclose(deps);
-	fclose(targs);
 
 	return 0;
 }
@@ -217,16 +213,6 @@ int main(int argc, char **argv)
 		show_error_message(argv[0]);
 		return EXIT_FAILURE;
 	}
-
-	//You may start your program by setting the target that make4061 should build.
-	//if target is not set, set it to default (first target from makefile)
-	if(argc == 1)
-	{
-	}
-	else
-	{
-	}
-
 
 	/* Parse graph file or die */
 	if((parse(szMakefile)) == -1) 

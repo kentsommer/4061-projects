@@ -136,23 +136,15 @@ bool isTarget(char * lpszLine)
  }
 
 //Checks for targets that aren't tied to anything and shouldn't be run unless called directly
-bool isIndependent(struct target target, struct target targetsArray[], int size)
+bool isIndependent(struct target target, struct target targetcheck)
 {
-   int i = 0;
    int y = 0;
-
-   while(i < size)
+   while(y < target.numchild)
    {
-      while(y < targetsArray[i].numchild)
-      {
-         if(strcmp(target.name, targetsArray[i].deps[y]) == 0) //target is linked to something
-         {
-            return false;
-         }
-         y++;
-      }
-      i++;
+      if(strcmp(targetcheck.name, target.deps[y]) == 0) //target is linked to something         {
+          return false;
    }
+   y++;
    return true;
 }
 //Compare the last modified time between two files.
