@@ -24,8 +24,6 @@
 #define MAX_LENGTH 1024
 #define MAX_DEPENDENCIES 10
 #define MAX_TARGETS 10
-#define MAX_PARENTS 10
-#define MAX_CHILDREN 10
 
  //Use booleans
 typedef enum { false, true } bool;
@@ -44,8 +42,7 @@ void freemakeargv(char **argv);
 typedef struct target{
 	int status; //Status (uncompiled 0, compiled 1, running 2etc)
 	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
-	char * children[MAX_CHILDREN]; //Children line numbers (max of 10) (dependencies)
-	char * parents[MAX_PARENTS]; //Parents line numbers (max of 10)
+	char * deps[MAX_DEPENDENCIES]; //Children line numbers (max of 10) (dependencies)
 	char * name;
 	pid_t pid; 
 	int numparent; //Number of parent targets

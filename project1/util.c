@@ -67,15 +67,10 @@ void print_target(target_t * target)
    printf("ID is: %d\n", target->linenum);
    printf("Status is: %d\n", target->status);
    printf("PID is: %d\n", target->pid);
-   printf("Parents are: \n");
-   for(p = 0; p < target->numparent; p++)
-   {
-      printf("%s\n", target->parents[p]);
-   }
    printf("Children are: \n");
    for(c = 0; c < target->numchild; c++)
    {
-      printf("%s\n", target->children[c]);
+      printf("%s\n", target->deps[c]);
    }
 }
 

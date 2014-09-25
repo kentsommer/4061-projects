@@ -83,7 +83,7 @@ int parse(char * lpszFileName)
 			{
 				if(strcmp(token, "") != 0)
 				{
-					current->children[dep_index] = token;
+					current->deps[dep_index] = token;
 					dep_index++;
 				}
 			}
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 		printf("Target is: %s\n", targets[i].name);
 		while(y < targets[i].numchild)
 		{
-			printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].children[y]);
+			printf("Dependencies for \"%s\" are: %s\n",targets[i].name, targets[i].deps[y]);
 			y++;
 		}
 		i++;
