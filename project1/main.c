@@ -49,8 +49,14 @@ int parse(char * lpszFileName)
 		struct target *current = malloc(sizeof(struct target) * 1024);
 		 //This will be used to fill current
 				// Target information and save to some list/array
+        
+        if (strcmp(szLine, "\n") == 0) {
+            printf("empty line\n");
+            //continue;
+        }
 		//Remove newline character at end if there is one
-		lpszLine = strtok(szLine, "\n"); 
+		lpszLine = strtok(szLine, "\n");
+        
 		lpszLinec = (char *) malloc(1024);
 		//Make a copy of the string and remove anything before token ":"
 		strcpy(lpszLinec, lpszLine);
