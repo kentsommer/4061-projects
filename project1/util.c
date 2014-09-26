@@ -82,21 +82,6 @@ void print_target(struct target * target)
    printf("\n");
 }
 
-bool isTarget(char * lpszLine)
-{
-   lpszLinec = (char *) malloc(1024);
-   //Make a copy of the string and remove anything before token ":"
-   strcpy(lpszLinec, lpszLine);
-   fstarget = strtok(lpszLinec, ":");
-   if (strlen(lpszLine) != strlen(fstarget))
-   {
-      free(lpszLinec);
-      return true; 
-   }
-   free(lpszLinec);
-   return false;
-}
-
 //return 0 if not all dependencies are  all compiled or lost file
 //return 1 if all dependencies are compiled and file exist
 

@@ -34,7 +34,6 @@ typedef enum { false, true } bool;
 FILE * file_open(char*);
 char * file_getline(char*, FILE*);
 int is_file_exist(char *);
-bool isTarget(char * lpszLine);
 int get_file_modification_time(char *);
 int compare_modification_time(char *, char *);
 int makeargv(const char *s, const char *delimiters, char ***argvp);
