@@ -162,7 +162,6 @@ bool isIndependent(struct target target, struct target targetcheck)
          return false;
       }
    }
-   printf("Returning true\n");
    return true;
 }
 
@@ -185,7 +184,7 @@ int fixArray(struct target targets[], int size, struct target mainTarget)
 
    while(i < size)
    {
-      printf("Current target is %s. Maintarget is: %s\n", targets[i].name, mainTarget.name);
+      //printf("Current target is %s. Maintarget is: %s\n", targets[i].name, mainTarget.name);
       if(isIndependent(targets[i], mainTarget))
       {
          for (y = i; y < size; y++)

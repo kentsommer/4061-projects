@@ -18,7 +18,6 @@ bool populateTarg = false;
 int hasOpt = 0;
 //Array holder
 struct target targets[MAX_TARGETS];
-struct target fixedTargets[MAX_TARGETS];
 int targetnum=0;
 int cmd_index=0;
 char * szTarget;
@@ -243,7 +242,11 @@ int main(int argc, char **argv)
 
 	//Print out all targets info after removing uncessary;
 	targetnum = fixArray(targets, targetnum, *mainTarget); //fix array and update targetnum
-	printf("There are %d proper targets\n", targetnum); //verify correct target num
+	
+	if(targetnum == 0)
+	{
+		printf("Target does not exist. Please check name and try again\n");
+	}
 
 	//Update status' (will probably want to do this in a loop);
 	updateStatus(targets, targetnum);
