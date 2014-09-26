@@ -59,5 +59,6 @@ void updateStatus(struct target targetsArray[], int size);
 bool isIndependent(struct target target, struct target targetcheck);
 void print_target(struct target * target);
 int fixArray(struct target targets[], int size, struct target mainTarget);
+bool isInArray(struct target targets[], int size, struct target mainTarget);
 
 #endif

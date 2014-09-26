@@ -155,7 +155,14 @@ bool isIndependent(struct target target, struct target targetcheck)
       }  
       y++;
    }
-   //printf("Returnig true\n");
+   if(target.numchild == 0) //no deps
+   {
+      if(strcmp(target.name, targetcheck.name) == 0) //same name
+      {
+         return false;
+      }
+   }
+   printf("Returning true\n");
    return true;
 }
 
@@ -163,8 +170,22 @@ int fixArray(struct target targets[], int size, struct target mainTarget)
 {
    int i = 0;
    int y = 0;
+
+   if(!isInArray(targets, size, mainTarget))
+   {
+      struct target *dummy = malloc(sizeof(struct target) * 1024);
+      while(i < size)
+      {
+         targets[i] = *dummy;
+         i++;
+      }
+      size = 0;
+      return size;
+   }
+
    while(i < size)
    {
+      printf("Current target is %s. Maintarget is: %s\n", targets[i].name, mainTarget.name);
       if(isIndependent(targets[i], mainTarget))
       {
          for (y = i; y < size; y++)
@@ -176,6 +197,20 @@ int fixArray(struct target targets[], int size, struct target mainTarget)
       i++;
    }
    return size;
+}
+
+bool isInArray(struct target targets[], int size, struct target mainTarget)
+{
+   int i = 0;
+   while(i < size)
+   {
+      if(strcmp(targets[i].name, mainTarget.name) == 0) // are the same
+      {
+         return true; 
+      }
+      i++;
+   }
+   return false;
 }
 //Compare the last modified time between two files.
 //return -1, if any one of file does not exist. 
