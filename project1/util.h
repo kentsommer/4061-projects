@@ -55,8 +55,9 @@ typedef struct target{
 	char * commands[MAX_COMMANDS];
 }target_t;
 
-bool isReady(struct target targetsArray[], int size);
+void updateStatus(struct target targetsArray[], int size);
 bool isIndependent(struct target target, struct target targetcheck);
 void print_target(struct target * target);
+int fixArray(struct target targets[], int size, struct target mainTarget);
 
 #endif

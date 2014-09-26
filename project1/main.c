@@ -12,14 +12,18 @@
 
 //FLAGS 
 int printcmds = 0; //This is global flag for print commands only (if -n)
-int setfirstTarg = 1;
-int targetset = false;
+bool setfirstTarg = true;
+bool targetset = false;
+bool populateTarg = false;
 int hasOpt = 0;
 //Array holder
 struct target targets[MAX_TARGETS];
+struct target fixedTargets[MAX_TARGETS];
 int targetnum=0;
 int cmd_index=0;
 char * szTarget;
+struct target *mainTarget;
+struct target * test;
 
 //This is a test comment
 //This function will parse makefile input from user or default makeFile. 
@@ -88,12 +92,20 @@ int parse(char * lpszFileName)
 		//Compare original to target, if equal, line is not a target line. 
 		if (strlen(lpszLine) != strlen(fstarget)) 
 		{
-			if(setfirstTarg == 1 && targetset == false) //target not set, setting to first target
-			{
+			if(targetset == false) //first time through and no mainTarget yet
+			{						//set main target
+				mainTarget = malloc(sizeof(struct target) * 1024);
 				szTarget = (char *) malloc(64);
+				mainTarget->name = fstarget; 
 				szTarget = fstarget;
 				targetset = true;
 			}
+			if(strcmp(fstarget, szTarget) == 0) //Target is mainTarget
+			{
+				populateTarg = true;
+				mainTarget->linenum = nLine;
+			}
+
 			cmd_index = 0; //Reset number of commands for new target
 			current->name = fstarget; //Set target name
 			current->linenum = nLine; //Set target linenum
@@ -110,16 +122,21 @@ int parse(char * lpszFileName)
 			{
 				if(strcmp(token, "") != 0)
 				{
+					if(populateTarg)
+					{
+						mainTarget->deps[dep_index] = token;
+					}
 					current->deps[dep_index] = token;
 					dep_index++;
 				}
 			}
-			current->numchild = dep_index;
-			// if(isIndependent(mainTarget, *current)) //This needs to be updated
-			// {    							     //To allow for target specification
+			if(populateTarg)
+			{
+				mainTarget->numchild = dep_index;
+				populateTarg = false;
+			}
+			current->numchild = dep_index;							     //To allow for target specification
 			targets[targetnum] = *current;
-			// }
-
 			targetnum++;
 		}
 
@@ -193,9 +210,10 @@ int main(int argc, char **argv)
 	//Checks if target is set via cmd line or if should grab first target
 	if(hasOpt != 1 && argc > 1)
 	{
+		mainTarget = malloc(sizeof(struct target) * 1024);
 		szTarget = (char *) malloc(64);
-		setfirstTarg = 0;
 		szTarget = argv[1];
+		mainTarget->name = szTarget; 
 		targetset = true;
 	}
 
@@ -219,21 +237,24 @@ int main(int argc, char **argv)
 	{
 		return EXIT_FAILURE;
 	}
-	//printf("Number of targets %d\n", targetnum);
-	printf("MAIN Target is: %s\n", szTarget);
+	//Print out mainTarget info:
+		//printf("Main target info:");
+		//print_target(mainTarget);
+
+	//Print out all targets info after removing uncessary;
+	targetnum = fixArray(targets, targetnum, *mainTarget); //fix array and update targetnum
+	printf("There are %d proper targets\n", targetnum); //verify correct target num
+
+	//Update status' (will probably want to do this in a loop);
+	updateStatus(targets, targetnum);
+
 	int i = 0;
 	while(i < targetnum)
 	{
-		print_target(&targets[i]);
-		 i++;
-	}
-
-	printf("Is ready: %d\n", isReady(targets, targetnum));
-
-	i = 0;
-	while(i < targetnum)
-	{
-		print_target(&targets[i]);
+		if(strcmp(targets[i].name, "(null)") != 0)
+		{
+			print_target(&targets[i]);
+		}
 		 i++;
 	}
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)

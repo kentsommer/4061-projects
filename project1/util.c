@@ -101,38 +101,39 @@ bool isTarget(char * lpszLine)
 //return 1 if all dependencies are compiled and file exist
 
 
- bool isReady(struct target targetsArray[], int size)
+ void updateStatus(struct target targetsArray[], int size)
  {
    int i =0;
    while(i < size)
    {
-      int y = 0;
-      while(y < targetsArray[i].numchild)
+      if(strcmp(targetsArray[i].name, "(null)") != 0)
       {
-         int z = 0;
-         while(z < size)
+         int y = 0;
+         while(y < targetsArray[i].numchild)
          {
-            if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
-            { 
-               if(targetsArray[z].status == FINISHED)
-               {
-                  targetsArray[i].status = READY;
-               }
+            int z = 0;
+            while(z < size)
+            {  
+               if(strcmp(targetsArray[z].name, targetsArray[i].deps[y]) == 0)
+               { 
+                  if(targetsArray[z].status == FINISHED)
+                  {
+                     targetsArray[i].status = READY;
+                  }
 
-               if(targetsArray[z].status == INELIGIBLE)
-               {
-                  targetsArray[i].status = INELIGIBLE;
-                  return false;
+                  if(targetsArray[z].status == INELIGIBLE)
+                  {
+                     targetsArray[i].status = INELIGIBLE;
+                  } 
                }
+               z++;
             }
-            z++;
+            y++;
          }
-         y++;
       }
       targetsArray[i].status = READY;
       i++;
    }
-   return true;
  }
 
 //Checks for targets that aren't tied to anything and shouldn't be run unless called directly
@@ -141,11 +142,40 @@ bool isIndependent(struct target target, struct target targetcheck)
    int y = 0;
    while(y < target.numchild)
    {
-      if(strcmp(targetcheck.name, target.deps[y]) == 0) //target is linked to something         {
-          return false;
+      if(strcmp(target.name, targetcheck.name) == 0)
+      {
+         //printf("Returnig false\n");
+         return false;
+      }
+
+      if(strcmp(targetcheck.name, target.deps[y]) == 0)
+      {
+         //printf("Returnig false\n");
+         return false;
+      }  
+      y++;
    }
-   y++;
+   //printf("Returnig true\n");
    return true;
+}
+
+int fixArray(struct target targets[], int size, struct target mainTarget)
+{
+   int i = 0;
+   int y = 0;
+   while(i < size)
+   {
+      if(isIndependent(targets[i], mainTarget))
+      {
+         for (y = i; y < size; y++)
+         {
+            targets[y] = targets[y+1];
+            size--;
+         }
+      }
+      i++;
+   }
+   return size;
 }
 //Compare the last modified time between two files.
 //return -1, if any one of file does not exist. 
