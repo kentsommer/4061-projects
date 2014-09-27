@@ -89,7 +89,7 @@ Target* initNewTarget()
 {
    Target* result = (Target *)malloc(sizeof(Target) * 1024);
    result->name = (char *)malloc(9 * sizeof(char*));
-   result->command = *(char **)malloc(1 * sizeof(char*));
+   result->command = (char *)malloc(1024);
    result->children =(Target **)malloc(9 * sizeof(Target *));
    result->dependencies = (char **)malloc(9 * sizeof(char *));
    return result;
@@ -119,7 +119,8 @@ void setDependencies(Target* targetset, char* dep_names)
 void print_target(Target* target)
 {
    printf("\n");
-   int d;
+   int d = 0;
+   printf("Testies");
    printf("Target is %s\n", target->name);
    printf("PID is: %d\n", target->pid);
    printf("Dependencies are: \n");

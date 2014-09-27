@@ -10,7 +10,7 @@
 #include "util.h"
 
 //Array holder for targets
-Target** targetArray;
+Target * targetArray[MAX_TARGETS];
 int targetCount = 0;
 
 //This function will parse makefile input from user or default makeFile. 
@@ -24,7 +24,7 @@ int parse(char * lpszFileName)
 
 	//Added struct vars and ints
 	char* dep_names;
-	Target* current = NULL;
+	Target * current = NULL;
 
 	if(fp == NULL)
 	{
@@ -36,9 +36,9 @@ int parse(char * lpszFileName)
 		linecopy = (char*)malloc(1024);
 		nLine++;
         
+        //Line is empties (segfaults oh my)
         if (strcmp(szLine, "\n") == 0)
         {
-            //printf("empty line\n");
             continue;
         }
 
@@ -47,14 +47,12 @@ int parse(char * lpszFileName)
 		char colon[] = {':'};
 		if(strpbrk (lpszLine, colon) != NULL)
 		{
-			printf("Setting a target\n");
 			current = initNewTarget(); //Malloc the struct
 			strcpy(linecopy, lpszLine); //Make line copy
-			printf("Finished string copy\n");
 			current->name = strtok(linecopy, ":"); //Set targetname
-			printf("Name was set to: %s\n", current->name);
 			dep_names = strtok(NULL, ":"); //Get string of dependencies
 			setDependencies(current, dep_names); //Set current's dependencies
+			targetArray[targetCount] = current;
 			targetCount++;
 			continue;
 		}
@@ -62,11 +60,9 @@ int parse(char * lpszFileName)
 		char tab[] = {'\t'};
         if (strpbrk (lpszLine, tab) != NULL)
         {
-        	printf("Setting a command\n";)
-        	lpszLine = lpszLine + 1; //Remove tab char
-        	current->command = lpszLine;
-        	targetArray[targetCount] = (Target *)malloc(sizeof(Target));
-      		targetArray[targetCount++] = current;
+        	strcpy(linecopy, lpszLine); //Make line copy
+        	linecopy = linecopy + 1; //Remove tab char
+        	targetArray[targetCount-1]->command = linecopy;
       		current = NULL;
   			continue;
         }
@@ -147,19 +143,20 @@ int main(int argc, char **argv)
 	{
 	}
 
-	printf("Starting parse\n");
 	/* Parse graph file or die */
 	if((parse(szMakefile)) == -1) 
 	{
 		return EXIT_FAILURE;
 	}
-	printf("Finished parse\n"); 
-
-	printf("Starting Print\n")
+	
 	//Test print to see what we have;
 	int i = 0;
 	while(i < targetCount)
 	{
+		if(targetArray[i]->name == NULL)
+		{
+			printf("Target is null\n");
+		}
 		print_target(targetArray[i]);
 		i++;
 	}

@@ -41,7 +41,7 @@ struct target{
     // name, pid, command, dependencies (array of pointers to other structs), dependencyArray, parent
     char * name;
     int pid;
-    char * command; // gcc, etc.
+    char* command; // gcc, etc.
     Target** children; // dependencies as nodes for the tree
     char** dependencies; // dependencies as a 1D array list
     int dep_count;
