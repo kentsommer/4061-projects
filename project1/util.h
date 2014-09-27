@@ -20,15 +20,10 @@
 #define READY 1
 #define RUNNING 2
 #define FINISHED 3
-#define SKIP 4
 
 #define MAX_LENGTH 1024
 #define MAX_DEPENDENCIES 10
 #define MAX_TARGETS 10
-#define MAX_COMMANDS 10
-
- //Use booleans
-typedef enum { false, true } bool;
 
 // This stuff is for easy file reading
 FILE * file_open(char*);
@@ -38,26 +33,9 @@ int get_file_modification_time(char *);
 int compare_modification_time(char *, char *);
 int makeargv(const char *s, const char *delimiters, char ***argvp);
 void freemakeargv(char **argv);
-int areDependenciesCompiled(char * children[]);
 
 //You will need to fill this struct out to make a graph.
 typedef struct target{
-	char * name;
-	int status; //Status (uncompiled 0, compiled 1 etc)
-	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
-	char * deps[MAX_DEPENDENCIES]; //Children line numbers (max of 10) (dependencies)
-	pid_t pid; 
-	int numparent; //Number of parent targets
-	int numchild; //Number of child targets
-	int numcmd;
-	bool hasDeps; //
-	char * commands[MAX_COMMANDS];
 }target_t;
-
-void updateStatus(struct target targetsArray[], int size);
-bool isIndependent(struct target target, struct target targetcheck);
-void print_target(struct target * target);
-int fixArray(struct target targets[], int size, struct target mainTarget);
-bool isInArray(struct target targets[], int size, struct target mainTarget);
 
 #endif

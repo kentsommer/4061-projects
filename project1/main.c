@@ -9,135 +9,28 @@
 
 #include "util.h"
 
-
-//FLAGS 
-int printcmds = 0; //This is global flag for print commands only (if -n)
-bool setfirstTarg = true;
-bool targetset = false;
-bool populateTarg = false;
-int hasOpt = 0;
-//Array holder
-struct target targets[MAX_TARGETS];
-int targetnum=0;
-int cmd_index=0;
-char * szTarget;
-struct target *mainTarget;
-struct target * test;
-
-//This is a test comment
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
 {
 	int nLine=0;
 	char szLine[1024];
 	char * lpszLine;
-	char * lpszLinec; 
-	char * cmdLine;
-	char * tofree;
-	char * token;
-	char * dependencies;
-	int chopnum = 0;
 	FILE * fp = file_open(lpszFileName);
-	
-	//String tokin (tokin get it??)
-	char * fstarget;
 
 	if(fp == NULL)
 	{
 		return -1;
 	}
 
-	if(printcmds == 1)
-	{
-		fprintf(stderr, "We only want to print commands, not run \n");
-	}
-
 	while(file_getline(szLine, fp) != NULL) 
 	{
 		nLine++;
+		// this loop will go through the given file, one line at a time
+		// this is where you need to do the work of interpreting
+		// each line of the file to be able to deal with it later
 
-		struct target *current = malloc(sizeof(struct target) * 1024);
-		 //This will be used to fill current
-				// Target information and save to some list/array
-        
-        if (strcmp(szLine, "\n") == 0) 
-        {
-            //printf("empty line\n");
-            continue;
-        }
 		//Remove newline character at end if there is one
-		lpszLine = strtok(szLine, "\n");
-
-		//check if it is a command line and add to the proper target
-		char key[] = {'\t'};
-        if (strpbrk (lpszLine, key) != NULL)
-        {
-        	if(targets[targetnum-1].name != NULL)
-        	{
-        		cmdLine = (char *) malloc(1024);
-        		strcpy(cmdLine, lpszLine);
-        		cmdLine = cmdLine + 1; //Remove tab char
-        		targets[targetnum-1].commands[cmd_index] = cmdLine;
-        		cmd_index++;
-        		targets[targetnum-1].numcmd = cmd_index;
-        	}
-        }
-        
-		lpszLinec = (char *) malloc(1024);
-		//Make a copy of the string and remove anything before token ":"
-		strcpy(lpszLinec, lpszLine);
-		fstarget = strtok(lpszLinec, ":");
-		
-		//Compare original to target, if equal, line is not a target line. 
-		if (strlen(lpszLine) != strlen(fstarget)) 
-		{
-			if(targetset == false) //first time through and no mainTarget yet
-			{						//set main target
-				mainTarget = malloc(sizeof(struct target) * 1024);
-				szTarget = (char *) malloc(64);
-				mainTarget->name = fstarget; 
-				szTarget = fstarget;
-				targetset = true;
-			}
-			if(strcmp(fstarget, szTarget) == 0) //Target is mainTarget
-			{
-				populateTarg = true;
-				mainTarget->linenum = nLine;
-			}
-
-			cmd_index = 0; //Reset number of commands for new target
-			current->name = fstarget; //Set target name
-			current->linenum = nLine; //Set target linenum
-			dependencies = (char *) malloc(1024); //REMOVE THIS SHIT LATER!!!!!!! :(
-			strcpy(dependencies, lpszLine);
-			chopnum = strlen(fstarget) + 2; 
-			dependencies += chopnum; //remove target name (point addition because baller)
-			//fprintf(stderr, "Dependencies are: \"%s\"\n", dependencies);
-			
-			tofree = (char *) malloc(1024); //REMOVE ME WHYYYYYY
-			strcpy(tofree, dependencies);
-			int dep_index = 0; 
-			while((token = strsep(&dependencies, " ")) != NULL)
-			{
-				if(strcmp(token, "") != 0)
-				{
-					if(populateTarg)
-					{
-						mainTarget->deps[dep_index] = token;
-					}
-					current->deps[dep_index] = token;
-					dep_index++;
-				}
-			}
-			if(populateTarg)
-			{
-				mainTarget->numchild = dep_index;
-				populateTarg = false;
-			}
-			current->numchild = dep_index;							     //To allow for target specification
-			targets[targetnum] = *current;
-			targetnum++;
-		}
+		lpszLine = strtok(szLine, "\n"); 
 
 		//You need to check below for parsing. 
 		//Skip if blank or comment.
@@ -150,7 +43,7 @@ int parse(char * lpszFileName)
 		//You can use any data structure (array, linked list ...) as you want to build a graph
 	}
 
-	//Close the makefile
+	//Close the makefile. 
 	fclose(fp);
 
 	return 0;
@@ -177,8 +70,8 @@ int main(int argc, char **argv)
 	
 	// Default makefile name will be Makefile
 	char szMakefile[64] = "Makefile";
+	char szTarget[64];
 	char szLog[64];
-	//parse(szMakefile); 
 
 	while((ch = getopt(argc, argv, format)) != -1) 
 	{
@@ -186,34 +79,19 @@ int main(int argc, char **argv)
 		{
 			case 'f':
 				strcpy(szMakefile, strdup(optarg));
-				hasOpt = 1;
 				break;
 			case 'n':
-				printcmds = 1;
-				hasOpt = 1;
 				break;
 			case 'B':
-				hasOpt = 1;
 				break;
 			case 'm':
 				strcpy(szLog, strdup(optarg));
-				hasOpt = 1;
 				break;
 			case 'h':
 			default:
 				show_error_message(argv[0]);
 				exit(1);
 		}
-	}
-
-	//Checks if target is set via cmd line or if should grab first target
-	if(hasOpt != 1 && argc > 1)
-	{
-		mainTarget = malloc(sizeof(struct target) * 1024);
-		szTarget = (char *) malloc(64);
-		szTarget = argv[1];
-		mainTarget->name = szTarget; 
-		targetset = true;
 	}
 
 	argc -= optind;
@@ -231,35 +109,22 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	//You may start your program by setting the target that make4061 should build.
+	//if target is not set, set it to default (first target from makefile)
+	if(argc == 1)
+	{
+	}
+	else
+	{
+	}
+
+
 	/* Parse graph file or die */
 	if((parse(szMakefile)) == -1) 
 	{
 		return EXIT_FAILURE;
 	}
-	//Print out mainTarget info:
-		//printf("Main target info:");
-		//print_target(mainTarget);
 
-	//Print out all targets info after removing uncessary;
-	targetnum = fixArray(targets, targetnum, *mainTarget); //fix array and update targetnum
-	
-	if(targetnum == 0)
-	{
-		printf("Target does not exist. Please check name and try again\n");
-	}
-
-	//Update status' (will probably want to do this in a loop);
-	updateStatus(targets, targetnum);
-
-	int i = 0;
-	while(i < targetnum)
-	{
-		if(strcmp(targets[i].name, "(null)") != 0)
-		{
-			print_target(&targets[i]);
-		}
-		 i++;
-	}
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
 	return EXIT_SUCCESS;
