@@ -35,6 +35,12 @@ int parse(char * lpszFileName)
 	{
 		linecopy = (char*)malloc(1024);
 		nLine++;
+        
+        if (strcmp(szLine, "\n") == 0)
+        {
+            //printf("empty line\n");
+            continue;
+        }
 
 		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
 		//Line is target line
