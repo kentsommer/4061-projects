@@ -35,7 +35,17 @@ int makeargv(const char *s, const char *delimiters, char ***argvp);
 void freemakeargv(char **argv);
 
 //You will need to fill this struct out to make a graph.
-typedef struct target{
-}target_t;
+typedef struct target Target;
+
+struct target{
+    // name, pid, command, dependencies (array of pointers to other structs), dependencyArray, parent
+    char * name;
+    pid_t pid;
+    char * command; // gcc, etc.
+    Target** children; // dependencies as nodes for the tree
+    char** dependencies; // dependencies as a 1D array list
+    Target *parent;
+
+};
 
 #endif
