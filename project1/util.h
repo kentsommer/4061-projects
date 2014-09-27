@@ -25,6 +25,9 @@
 #define MAX_DEPENDENCIES 10
 #define MAX_TARGETS 10
 
+ //Use booleans
+typedef enum { false, true } bool;
+
 // This stuff is for easy file reading
 FILE * file_open(char*);
 char * file_getline(char*, FILE*);
@@ -49,8 +52,21 @@ struct target{
 
 };
 
+typedef struct tree Tree;
+
+struct tree
+{
+	Target* root;
+};
+
 void print_target(Target* target);
 void setDependencies(Target* targetset, char* dep_names);
+void removeDependency(char** dependencies, int index);
+Target* buildTree(Target** targetArray, int targetCount, char * mainTarget);
+int addToTree(Target** targetArray, Target* target);
+int addDependencies(Target* target, Target** targetArray);
+int sizeOfArray(Target** targetArray);
+void removeDependency(char** dependencies, int index);
 Target* initNewTarget();
 
 #endif

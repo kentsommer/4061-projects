@@ -87,12 +87,20 @@ int compare_modification_time(char * lpsz1, char * lpsz2)
 
 Target* initNewTarget()
 {
-   Target* result = (Target *)malloc(sizeof(Target) * 1024);
-   result->name = (char *)malloc(9 * sizeof(char*));
-   result->command = (char *)malloc(1024);
-   result->children =(Target **)malloc(9 * sizeof(Target *));
-   result->dependencies = (char **)malloc(9 * sizeof(char *));
+   Target* result = (Target *) malloc(sizeof(Target) * 1024);
+   result->name = (char *) malloc(9 * sizeof(char*));
+   result->command = (char *) malloc(1024);
+   result->children =(Target **) malloc(9 * sizeof(Target *));
+   result->dependencies = (char **) malloc(9 * sizeof(char *));
    return result;
+}
+
+Tree* initTree()
+{
+   Tree* tree = (Tree *) malloc(sizeof(Tree));
+   Target* root = initNewTarget();
+   strcpy(root->name, "root");
+   return tree;
 }
 
 void setDependencies(Target* targetset, char* dep_names)
@@ -130,6 +138,106 @@ void print_target(Target* target)
    }
    printf("Command is: %s\n", target->command);
    printf("\n");
+}
+
+Target* buildTree(Target** targetArray, int targetCount, char * mainTarget)
+{
+   bool addToRoot = true;
+   int i = 0;
+   int y = 0;
+   int c = 0;
+   Tree* tree = initTree();
+
+   // if(!holdsMainTarget(targetArray, mainTarget))
+   // {
+   //    fprintf(stderr, "ERROR: Target specified does not exist.\n");
+   //    exit(1);
+   // }
+
+   //addMainToRoot(targetArray, tree, mainTarget);
+
+   while(addToTree(targetArray, tree) != 0)
+   {
+      c++;
+
+      if(c > targetCount);
+      {
+         fprintf(stderr, "YO you have a cycle in the dependencies I'm not dealing with this shit. \n");
+         exit(1);
+      }
+   }
+   return tree;
+}
+
+int addToTree(Target** targetArray, Target* target)
+{
+   int i = 0;
+   int result = 0;
+   if(target->children[0]!= NULL)
+   {
+      while(target->children[i] != NULL)
+      {
+         result = result || addToTree(targetArray, target->children[i]);
+         i++;
+      }
+   }
+   else
+   {
+      result = addDependencies(target, targetArray);
+   }
+   return result;
+}
+
+int addDependencies(Target* target, Target** targetArray)
+{
+   int i = 0;
+   int y = 0;
+   int numDeps;
+   bool added = false;
+   bool found;
+   while(target->dependencies[i] != NULL)
+   {
+      y = 0;
+      found = false;
+      while(targetArray[y] != NULL)
+      {
+         if(strcmp(targetArray[y]->name, target->dependencies[i]) == 0)
+         {
+            numDeps = sizeOfArray(target->children);
+            target->children[numDeps] = targetArray[y];
+            removeDependency(target->dependencies, i);
+            added = true;
+            found = true;
+            break;
+         }
+         y++;
+      }
+      if(!found)
+      {
+         printf("Well isn't that shitty, looks like a dependency doesn't exist\n");
+         removeDependency(target->dependencies, i);
+      }
+   }
+   return added;
+}
+
+int sizeOfArray(Target** targetArray)
+{
+   int result = 0;
+   while(targetArray[result] != NULL)
+   {
+      result++;
+   }
+   return result;
+}
+
+void removeDependency(char** dependencies, int index)
+{
+   while(dependencies[index] != NULL)
+   {
+      dependencies[index] = dependencies[index+1];
+      index++;
+   }
 }
 
 // makeargv
