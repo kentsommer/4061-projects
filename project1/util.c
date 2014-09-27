@@ -85,6 +85,16 @@ int compare_modification_time(char * lpsz1, char * lpsz2)
 	}
 }
 
+Target* initNewTarget()
+{
+   Target* result = (Target *)malloc(sizeof(Target));
+   result->name = (char *)malloc(9 * sizeof(char*));
+   result->command = (char **)malloc(1 * sizeof(char*));
+   result->children =(Target **)malloc(9 * sizeof(Target *));
+   result->dependencies = (char **)malloc(9 * sizeof(char *));
+   return result;
+}
+
 // makeargv
 /* Taken from Unix Systems Programming, Robbins & Robbins, p37 */
 int makeargv(const char *s, const char *delimiters, char ***argvp) {

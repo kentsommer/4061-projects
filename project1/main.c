@@ -14,8 +14,14 @@ int parse(char * lpszFileName)
 {
 	int nLine=0;
 	char szLine[1024];
-	char * lpszLine;
+	char* lpszLine;
+	char* linecopy;
 	FILE * fp = file_open(lpszFileName);
+
+	//Added struct vars and ints
+	char* dep_names; 
+	int targetCount, commandCount; 
+	Target* current = NULL;
 
 	if(fp == NULL)
 	{
@@ -24,13 +30,14 @@ int parse(char * lpszFileName)
 
 	while(file_getline(szLine, fp) != NULL) 
 	{
+		linecopy = (char*)malloc(1024);
 		nLine++;
-		// this loop will go through the given file, one line at a time
-		// this is where you need to do the work of interpreting
-		// each line of the file to be able to deal with it later
 
-		//Remove newline character at end if there is one
-		lpszLine = strtok(szLine, "\n"); 
+		//
+		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
+		current = initNewTarget();
+		strcpy(linecopy, lpszLine);
+
 
 		//You need to check below for parsing. 
 		//Skip if blank or comment.
