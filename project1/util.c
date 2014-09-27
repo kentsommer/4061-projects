@@ -87,12 +87,48 @@ int compare_modification_time(char * lpsz1, char * lpsz2)
 
 Target* initNewTarget()
 {
-   Target* result = (Target *)malloc(sizeof(Target));
+   Target* result = (Target *)malloc(sizeof(Target) * 1024);
    result->name = (char *)malloc(9 * sizeof(char*));
-   result->command = (char **)malloc(1 * sizeof(char*));
+   result->command = *(char **)malloc(1 * sizeof(char*));
    result->children =(Target **)malloc(9 * sizeof(Target *));
    result->dependencies = (char **)malloc(9 * sizeof(char *));
    return result;
+}
+
+void setDependencies(Target* targetset, char* dep_names)
+{
+   int dep_count = 0;
+   char* current = (char*)malloc(9 * sizeof(char));
+   if(dep_names == NULL)
+   {
+      targetset->dependencies = NULL;
+      return;
+   }
+
+   current = strtok(dep_names, " ");
+   while(current != NULL)
+   {
+      targetset->dependencies[dep_count] = (char *)malloc(9 * sizeof(char) + 1);
+      targetset->dependencies[dep_count++] = current;
+      current = strtok(NULL, " ");
+   }
+   targetset->dep_count = dep_count;
+}
+
+//Prints the target information including runstatus and dependencies
+void print_target(Target* target)
+{
+   printf("\n");
+   int d;
+   printf("Target is %s\n", target->name);
+   printf("PID is: %d\n", target->pid);
+   printf("Dependencies are: \n");
+   for(d = 0; d < target->dep_count; d++)
+   {
+      printf("\t%s\n", target->dependencies[d]);
+   }
+   printf("Command is: %s\n", target->command);
+   printf("\n");
 }
 
 // makeargv

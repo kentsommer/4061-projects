@@ -9,6 +9,10 @@
 
 #include "util.h"
 
+//Array holder for targets
+Target** targetArray;
+int targetCount = 0;
+
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
 {
@@ -19,8 +23,7 @@ int parse(char * lpszFileName)
 	FILE * fp = file_open(lpszFileName);
 
 	//Added struct vars and ints
-	char* dep_names; 
-	int targetCount, commandCount; 
+	char* dep_names;
 	Target* current = NULL;
 
 	if(fp == NULL)
@@ -33,21 +36,34 @@ int parse(char * lpszFileName)
 		linecopy = (char*)malloc(1024);
 		nLine++;
 
-		//
 		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
-		current = initNewTarget();
-		strcpy(linecopy, lpszLine);
-
-
-		//You need to check below for parsing. 
-		//Skip if blank or comment.
-		//Remove leading whitespace.
-		//Skip if whitespace-only.
-		//Only single command is allowed.
-		//If you found any syntax error, stop parsing. 
-		//If lpszLine starts with '\t' it will be command else it will be target.
-		//It is possbile that target may not have a command as you can see from the example on project write-up. (target:all)
-		//You can use any data structure (array, linked list ...) as you want to build a graph
+		//Line is target line
+		char colon[] = {':'};
+		if(strpbrk (lpszLine, colon) != NULL)
+		{
+			printf("Setting a target\n");
+			current = initNewTarget(); //Malloc the struct
+			strcpy(linecopy, lpszLine); //Make line copy
+			printf("Finished string copy\n");
+			current->name = strtok(linecopy, ":"); //Set targetname
+			printf("Name was set to: %s\n", current->name);
+			dep_names = strtok(NULL, ":"); //Get string of dependencies
+			setDependencies(current, dep_names); //Set current's dependencies
+			targetCount++;
+			continue;
+		}
+		//Line is command line
+		char tab[] = {'\t'};
+        if (strpbrk (lpszLine, tab) != NULL)
+        {
+        	printf("Setting a command\n";)
+        	lpszLine = lpszLine + 1; //Remove tab char
+        	current->command = lpszLine;
+        	targetArray[targetCount] = (Target *)malloc(sizeof(Target));
+      		targetArray[targetCount++] = current;
+      		current = NULL;
+  			continue;
+        }
 	}
 
 	//Close the makefile. 
@@ -125,11 +141,21 @@ int main(int argc, char **argv)
 	{
 	}
 
-
+	printf("Starting parse\n");
 	/* Parse graph file or die */
 	if((parse(szMakefile)) == -1) 
 	{
 		return EXIT_FAILURE;
+	}
+	printf("Finished parse\n"); 
+
+	printf("Starting Print\n")
+	//Test print to see what we have;
+	int i = 0;
+	while(i < targetCount)
+	{
+		print_target(targetArray[i]);
+		i++;
 	}
 
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)

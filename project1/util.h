@@ -40,12 +40,17 @@ typedef struct target Target;
 struct target{
     // name, pid, command, dependencies (array of pointers to other structs), dependencyArray, parent
     char * name;
-    pid_t pid;
+    int pid;
     char * command; // gcc, etc.
     Target** children; // dependencies as nodes for the tree
     char** dependencies; // dependencies as a 1D array list
+    int dep_count;
     Target *parent;
 
 };
+
+void print_target(Target* target);
+void setDependencies(Target* targetset, char* dep_names);
+Target* initNewTarget();
 
 #endif
