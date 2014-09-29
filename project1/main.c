@@ -111,6 +111,7 @@ int main(int argc, char **argv)
 				strcpy(szMakefile, strdup(optarg));
 				break;
 			case 'n':
+				execute = false;
 				break;
 			case 'B':
 				break;
