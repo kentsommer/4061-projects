@@ -10,8 +10,12 @@
 #include "util.h"
 
 //Array holder for targets
-Target * targetArray[MAX_TARGETS];
+Target * targetArray[10];
 int targetCount = 0;
+
+//Main target name holder
+char * mainTarget;
+bool parsed = false;
 
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
@@ -44,10 +48,9 @@ int parse(char * lpszFileName)
 
 		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
 		//Line is target line
-		char colon[] = {':'};
-		if(strpbrk (lpszLine, colon) != NULL)
+		if(strstr(lpszLine,":"))
 		{
-			current = initNewTarget(); //Malloc the struct
+			current = initTarget(); //Malloc the struct
 			strcpy(linecopy, lpszLine); //Make line copy
 			current->name = strtok(linecopy, ":"); //Set targetname
 			dep_names = strtok(NULL, ":"); //Get string of dependencies
@@ -92,6 +95,8 @@ int main(int argc, char **argv)
 	extern char * optarg;
 	int ch;
 	char * format = "f:hnBm:";
+	bool hasOpt = false;
+	bool execute = true;
 	
 	// Default makefile name will be Makefile
 	char szMakefile[64] = "Makefile";
@@ -113,6 +118,7 @@ int main(int argc, char **argv)
 				strcpy(szLog, strdup(optarg));
 				break;
 			case 'h':
+				break;
 			default:
 				show_error_message(argv[0]);
 				exit(1);
@@ -136,30 +142,42 @@ int main(int argc, char **argv)
 
 	//You may start your program by setting the target that make4061 should build.
 	//if target is not set, set it to default (first target from makefile)
-	if(argc == 1)
+	if(argc == 1) //Target specified
 	{
+		mainTarget = argv[0];
 	}
 	else
 	{
+		/* Parse graph file or die */
+		if((parse(szMakefile)) == -1) 
+		{
+			return EXIT_FAILURE;
+		}
+		parsed = true;
+		mainTarget = targetArray[0]->name;
 	}
 
-	/* Parse graph file or die */
-	if((parse(szMakefile)) == -1) 
+	if(!parsed)
 	{
-		return EXIT_FAILURE;
-	}
-	
-	//Test print to see what we have;
-	int i = 0;
-	while(i < targetCount)
-	{
-		if(targetArray[i]->name == NULL)
+		/* Parse graph file or die */
+		if((parse(szMakefile)) == -1) 
 		{
-			printf("Target is null\n");
+			return EXIT_FAILURE;
 		}
-		print_target(targetArray[i]);
-		i++;
 	}
+
+	//DEBUG THE TARGET LIST PRINT FUNCTION
+	//printTargets(targetArray, targetCount);
+
+	Tree* semiTree = buildTree(targetArray, targetCount);
+	// char** treeNames = checkTree(semiTree);
+	// int y = 0;
+	// while(treeNames[y] != NULL)
+	// {
+	// 	printf("Tree name is now: %s\n", treeNames[y]);
+	// 	y++;
+	// }
+	executeMake(mainTarget,semiTree,execute);
 
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
