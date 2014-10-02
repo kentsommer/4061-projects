@@ -308,7 +308,7 @@ int setDependencies(Target* newtarget, char* dependencies)
   if(dependencies == NULL)
   {
     newtarget->dependencies = NULL;
-    return;
+    return 0;
   }
 
   element = strtok(dependencies," ");
