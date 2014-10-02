@@ -214,6 +214,7 @@ int executeMakeRec(Target* target, bool execute)
 
   if(target->execute == false)
   {
+    printf("Skipping %s, already up to date\n", target->name);
     return 1;
   }
 

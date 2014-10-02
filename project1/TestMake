@@ -1,6 +1,0 @@
-test1: test2
-	echo I should run second
-test2:
-	echo I should run first
-clean:
-	echo cleaned stuff

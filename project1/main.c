@@ -16,6 +16,8 @@ int targetCount = 0;
 //Main target name holder
 char * mainTarget;
 bool parsed = false;
+bool reDir = false;
+int logfd;
 
 //This function will parse makefile input from user or default makeFile. 
 int parse(char * lpszFileName)
@@ -133,6 +135,7 @@ int main(int argc, char **argv)
 			case 'B':
 				break;
 			case 'm':
+				reDir = true;
 				strcpy(szLog, strdup(optarg));
 				break;
 			case 'h':
@@ -145,12 +148,16 @@ int main(int argc, char **argv)
 
 	argc -= optind;
 	argv += optind;
-
 	// at this point, what is left in argv is the targets that were 
 	// specified on the command line. argc has the number of them.
 	// If getopt is still really confusing,
 	// try printing out what's in argv right here, then just running 
 	// with various command-line arguments.
+	if(reDir)
+	{
+		logfd = open(szLog, O_CREAT|O_TRUNC|O_WRONLY, 0644);
+		dup2(logfd, 1);
+	}
 
 	if(argc > 1)
 	{
@@ -192,8 +199,8 @@ int main(int argc, char **argv)
 	Tree* semiTree = buildTree(targetArray, targetCount);
 
 	executeMake(mainTarget,semiTree,execute);
-
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
+	exit(0);
 	return EXIT_SUCCESS;
 }
