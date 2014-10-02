@@ -15,20 +15,10 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-//You can change any value in this file as you want. 
-#define INELIGIBLE 0
-#define READY 1
-#define RUNNING 2
-#define FINISHED 3
-#define SKIP 4
-
-#define MAX_LENGTH 1024
-#define MAX_DEPENDENCIES 10
-#define MAX_TARGETS 10
-#define MAX_COMMANDS 10
-
- //Use booleans
-typedef enum { false, true } bool;
+//Defenitions for bool
+#define true 1
+#define false 0
+typedef int bool;
 
 // This stuff is for easy file reading
 FILE * file_open(char*);
@@ -36,28 +26,47 @@ char * file_getline(char*, FILE*);
 int is_file_exist(char *);
 int get_file_modification_time(char *);
 int compare_modification_time(char *, char *);
-int makeargv(const char *s, const char *delimiters, char ***argvp);
-void freemakeargv(char **argv);
-int areDependenciesCompiled(char * children[]);
 
-//You will need to fill this struct out to make a graph.
-typedef struct target{
-	char * name;
-	int status; //Status (uncompiled 0, compiled 1 etc)
-	int linenum; //Line number of target (can be pulled from nLine to be regrabbed)
-	char * deps[MAX_DEPENDENCIES]; //Children line numbers (max of 10) (dependencies)
-	pid_t pid; 
-	int numparent; //Number of parent targets
-	int numchild; //Number of child targets
-	int numcmd;
-	bool hasDeps; //
-	char * commands[MAX_COMMANDS];
-}target_t;
+//Set up some defines for mallocing things
+#define MAX_DEPS 10
 
-void updateStatus(struct target targetsArray[], int size);
-bool isIndependent(struct target target, struct target targetcheck);
-void print_target(struct target * target);
-int fixArray(struct target targets[], int size, struct target mainTarget);
-bool isInArray(struct target targets[], int size, struct target mainTarget);
+typedef struct target Target;
+
+struct target
+{
+	char* name; //Target name
+    char* command; //Target command
+    Target** children; //Array of children
+    char** dependencies; //Array of dependencies
+    int dep_num; //Number of Dependencies
+    bool execute; //timestamp checky
+};
+
+typedef struct tree
+{
+    Target* root;
+} Tree;
+
+
+Tree* initTree(void); //Allocate space for tree
+Target* initTarget(void); //Allocate space for target
+Target* findTarget(char*, Tree*); //Search tree for target
+Target* findTargetRec(char*, Target*); //Recursive helper for search tree
+Tree* buildTree(Target**, int); //Build tree using target array
+int addtoRoot(Target*, Tree*); //Add target too root of tree
+int stripforme(char* dependencies); //Strips leading whitespace
+char** getCmdArray(char* ); //Get array of command strings for exec'ing
+int getSize(Target**); //Return Size of array
+int executeMake(char*, Tree* ,bool); //Execute the tree
+int executeMakeRec(Target*, bool); //Recursive helper for execute tree
+int shouldExecute(Target* target);
+int updateCheck(Target** targetArray, int targetCount);
+char** getTreeTargets(Tree*); //Return string array of targets from the tree
+void getTreeTargetsRec(Target*, char**, int); //Recursive helper for string array from tree
+int setDependencies(Target*, char*); //Set dependencies for a target (relation to tree)
+int addConnected(Target** , Tree*); //Add connected targets to tree
+int addConnectedRec(Target**, Target*); //Recursive helper for adding connected to tree
+void printTargets(Target**, int); //Prints out target array (before tree build)
+void removeDependency(char**, int); //Deletes a dependency from the array
 
 #endif
