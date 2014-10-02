@@ -1,0 +1,22 @@
+/* CSci4061 F2014 Assignment 1
+* login: somme282
+* date: 10/02/2014
+* name: Kent Sommer, Kanad Gupta, Xi Chen
+* id: 4530009, 4381406, id for third name */
+
+TESTED ON kh1262-01: WORKING
+
+Purpose of program:
+	make4061 will accomplish the same tasks as the standard make utility with some restrictions.
+How to compile: 
+	With the given Makefile and source files (main.c, util.c, util.h) simply run "make". 
+	Alternatively run "gcc -o make4061 main.c util.c"
+How to use program:
+	Usage: ./make4061 [options] [target] : only single target is allowed.
+	-f FILE		Read FILE as a makefile.
+	-h		Print this message and exit.
+	-n		Don't actually execute commands, just print them.
+	-B		Don't check files timestamps.
+	-m FILE		Redirect the output to the file specified . 
+What exactly does our program do?
+	Parses a Makefile (building a tree) and runs fork and exec to run the commands for the targets as needed. 
