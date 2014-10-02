@@ -184,6 +184,8 @@ int main(int argc, char **argv)
 		}
 	}
 
+	updateCheck(targetArray, targetCount);
+
 	//DEBUG THE TARGET LIST PRINT FUNCTION
 	//printTargets(targetArray, targetCount);
 

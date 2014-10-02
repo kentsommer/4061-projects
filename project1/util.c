@@ -212,10 +212,9 @@ int executeMakeRec(Target* target, bool execute)
     }
   }
 
-  if(!shouldExecute(target))
+  if(target->execute == false)
   {
-    printf("Nothing to update here...\n");
-    exit(1);
+    return 1;
   }
 
   if(strcmp(target->command, "echo") == 0)
@@ -251,28 +250,41 @@ int executeMakeRec(Target* target, bool execute)
   return 1;  
 }
 
-//Compare the last modified time between two files.
-//return -1, if any one of file does not exist. 
-//return 0, if both modified time is the same.
-//return 1, if first parameter is bigger (more recent)
-//return 2, if second parameter is bigger (more recent)
-bool shouldExecute(Target* target)
+
+int updateCheck(Target** targetArray, int targetCount)
 {
-  int size = getSize(target->children);
+  int i = 0;
+  while(i < targetCount)
+  {
+    shouldExecute(targetArray[i]);
+    i++;
+  }
+  return 0;
+}
+
+int shouldExecute(Target* target)
+{
+  int size = target->dep_num;
   int i = 0;
   if(is_file_exist(target->name) == -1)
   {
-    //printf("Returning true for %s\n", target->name);
-    return true;
+    //printf("Returning true (no file) for %s\n", target->name);
+    target->execute = true;
+    return 0;
   }
   while(i < size)
   {
-    if(compare_modification_time(target->name, target->children[i]->name) == 2)
+    if(compare_modification_time(target->name, target->dependencies[i]) == 2)
     {
-      return true;
+      //printf("Returning true (updated deps) for %s\n", target->name);
+      target->execute = true;
+      return 0;
     }
+    i++;
   }
-  return false;
+  //printf("Returning false for %s\n", target->name);
+  target->execute = false;
+  return 0;
 }
 
 char** getTreeTargets(Tree* tree)
