@@ -209,6 +209,5 @@ int main(int argc, char **argv)
 	executeMake(mainTarget,semiTree,execute);
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)
 	//then execute all of the targets that were specified on the command line, along with their dependencies, etc.
-	exit(0);
 	return EXIT_SUCCESS;
 }
