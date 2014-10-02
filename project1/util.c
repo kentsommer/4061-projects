@@ -83,6 +83,34 @@ int compare_modification_time(char * lpsz1, char * lpsz2)
     return 2;
   }
 }
+//return true if empty dependencies
+//return false if it has dependencies
+bool stripforme(char* dependencies)
+{
+  char* dep_copy; 
+  printf("Stuff\n");
+  strcpy(dep_copy, dependencies);
+  printf("Finished copy\n");
+	// while(isspace(*dep_copy))
+	// {
+ //    printf("Dep is now: %s\n", dep_copy);
+	// 	dep_copy++;
+	// }
+  if(dep_copy != NULL)
+  {
+    if(isspace(dep_copy[0]))
+    {
+      printf("%s\n", dep_copy[0]);
+      dep_copy = dep_copy + 1;
+    }
+    printf("1");
+    if(dep_copy == NULL)
+    {
+      return true;
+    }
+  }
+  else return false;
+}
 
 int addDependency(Target* target, Target** list)
 {
@@ -181,6 +209,7 @@ int executeMakeRec(Target* target, bool execute)
 
   if(execute && target->command != NULL)
   {
+    printf("%s\n",target->command);
     char** str = getCmdArray(target->command);
     childpid = fork();
     if (childpid == -1) 
@@ -231,7 +260,7 @@ void getTreeTargetsRec(Target* target, char** Namelist, int count)
   }
 }
 
-void setDependencies(Target* newtarget, char* dependencies)
+int setDependencies(Target* newtarget, char* dependencies)
 {
   int targetCount = 0;
   char* element = (char*) malloc(10 * sizeof(char));
@@ -242,8 +271,7 @@ void setDependencies(Target* newtarget, char* dependencies)
   }
 
   element = strtok(dependencies," ");
-  if(strcmp(element, "\n") == 0)
-    return;
+  //printf("Current element is: \"%s\"\n", element);
   while(element != NULL)
   {
     newtarget->dependencies[targetCount] = (char *)malloc(MAX_DEPS*sizeof(char) + 1);
@@ -251,6 +279,7 @@ void setDependencies(Target* newtarget, char* dependencies)
     element = strtok(NULL," ");
   }
   newtarget->dep_num = targetCount;
+  return 0;
 }
 
 Target* initTarget()

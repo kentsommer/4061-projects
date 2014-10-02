@@ -53,13 +53,14 @@ Target* findTarget(char*, Tree*); //Search tree for target
 Target* findTargetRec(char*, Target*); //Recursive helper for search tree
 Tree* buildTree(Target**, int); //Build tree using target array
 int addtoRoot(Target*, Tree*); //Add target too root of tree
+int stripforme(char* dependencies); //Strips leading whitespace
 char** getCmdArray(char* ); //Get array of command strings for exec'ing
 int getSize(Target**); //Return Size of array
 int executeMake(char*, Tree* ,bool); //Execute the tree
 int executeMakeRec(Target*, bool); //Recursive helper for execute tree
 char** getTreeTargets(Tree*); //Return string array of targets from the tree
 void getTreeTargetsRec(Target*, char**, int); //Recursive helper for string array from tree
-void setDependencies(Target*, char*); //Set dependencies for a target (relation to tree)
+int setDependencies(Target*, char*); //Set dependencies for a target (relation to tree)
 int addConnected(Target** , Tree*); //Add connected targets to tree
 int addConnectedRec(Target**, Target*); //Recursive helper for adding connected to tree
 void printTargets(Target**, int); //Prints out target array (before tree build)

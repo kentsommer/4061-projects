@@ -47,13 +47,17 @@ int parse(char * lpszFileName)
         }
 
 		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
-		
-		//Line is a comment line
-		if(strstr(lpszLine, "#"))
+		//printf("Line is: %s\n", lpszLine);
+		if(!strstr(lpszLine, "#") && !strstr(lpszLine, ":") && !strstr(lpszLine, "\t"))
 		{
-			continue;
+			printf("Yo, you done screwed up your syntax fix that shit\n");
+			exit(1);
 		}
 
+		if(strstr(lpszLine, "#"))
+		{
+			continue; 
+		}
 		//Line is target line
 		if(strstr(lpszLine,":"))
 		{
@@ -61,6 +65,12 @@ int parse(char * lpszFileName)
 			strcpy(linecopy, lpszLine); //Make line copy
 			current->name = strtok(linecopy, ":"); //Set targetname
 			dep_names = strtok(NULL, ":"); //Get string of dependencies
+			//printf("Deps are: %s\n", dep_names);
+			// if(stripforme(dep_names))
+			// {
+			// 	dep_names = "";
+			// }
+			//printf("Deps are: %s\n", dep_names);
 			setDependencies(current, dep_names); //Set current's dependencies
 			targetArray[targetCount] = current;
 			targetCount++;
