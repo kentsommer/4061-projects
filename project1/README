@@ -20,4 +20,5 @@ How to use program:
 	-B		Don't check files timestamps.
 	-m FILE		Redirect the output to the file specified . 
 What exactly does our program do?
-	Parses a Makefile (building a tree) and runs fork and exec to run the commands for the targets as needed. 
+	Parses a Makefile (building a tree) and runs fork and exec
+	 to run the commands for the targets as needed. 
