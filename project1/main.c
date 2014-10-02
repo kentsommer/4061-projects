@@ -1,3 +1,9 @@
+/* CSci4061 F2014 Assignment 1
+* login: somme282           
+* date: 10/02/2014
+* name: Kent Sommer, Kanad Gupta, Xi Chen                    
+* id: 4530009, 4381406, id for third name */
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -52,7 +58,7 @@ int parse(char * lpszFileName)
 		//printf("Line is: %s\n", lpszLine);
 		if(!strstr(lpszLine, "#") && !strstr(lpszLine, ":") && !strstr(lpszLine, "\t"))
 		{
-			printf("Yo, you done screwed up your syntax fix that shit\n");
+			printf("Yo, you done screwed up your syntax, fix your makefile\n");
 			exit(1);
 		}
 
@@ -99,7 +105,7 @@ int parse(char * lpszFileName)
 void show_error_message(char * lpszFileName)
 {
 	fprintf(stderr, "Usage: %s [options] [target] : only single target is allowed.\n", lpszFileName);
-	fprintf(stderr, "-f FILE\t\tRead FILE as a maumfile.\n");
+	fprintf(stderr, "-f FILE\t\tRead FILE as a makefile.\n");
 	fprintf(stderr, "-h\t\tPrint this message and exit.\n");
 	fprintf(stderr, "-n\t\tDon't actually execute commands, just print them.\n");
 	fprintf(stderr, "-B\t\tDon't check files timestamps.\n");

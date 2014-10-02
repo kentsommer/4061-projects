@@ -83,35 +83,9 @@ int compare_modification_time(char * lpsz1, char * lpsz2)
     return 2;
   }
 }
-//return true if empty dependencies
-//return false if it has dependencies
-bool stripforme(char* dependencies)
-{
-  char* dep_copy; 
-  printf("Stuff\n");
-  strcpy(dep_copy, dependencies);
-  printf("Finished copy\n");
-	// while(isspace(*dep_copy))
-	// {
- //    printf("Dep is now: %s\n", dep_copy);
-	// 	dep_copy++;
-	// }
-  if(dep_copy != NULL)
-  {
-    if(isspace(dep_copy[0]))
-    {
-      printf("%s\n", dep_copy[0]);
-      dep_copy = dep_copy + 1;
-    }
-    printf("1");
-    if(dep_copy == NULL)
-    {
-      return true;
-    }
-  }
-  else return false;
-}
 
+//This function goes through and moves dependencies from the char list
+// to the targetList for building of the tree (need dep structs not char)
 int addDependency(Target* target, Target** list)
 {
   int i=0,j=0;
@@ -145,6 +119,7 @@ int addDependency(Target* target, Target** list)
   return isAdd;
 }
 
+//Adds a given target to the root of the tree
 int addtoRoot(Target* target,Tree* tree)
 {
   int i = 0;
@@ -156,6 +131,7 @@ int addtoRoot(Target* target,Tree* tree)
   return 1;
 }
 
+//Breaks the command str into parts separated by spaces
 char** getCmdArray(char* str)
 {
   int i = 0;
@@ -169,6 +145,7 @@ char** getCmdArray(char* str)
   return array;
 }
 
+//Returns size of given array of targets
 int getSize(Target** array)
 {
   int size = 0;
@@ -179,6 +156,7 @@ int getSize(Target** array)
   return size;
 }
 
+//Will decide whether to run executeMakeRec from root or given target
 int executeMake(char* rootName, Tree* tree, bool execute)
 {
   Target* subroot;
@@ -199,6 +177,7 @@ int executeMake(char* rootName, Tree* tree, bool execute)
   return 1;
 }
 
+//Recursive function to fork and exec the targets and commands in proper order
 int executeMakeRec(Target* target, bool execute)
 {
   int size = getSize(target->children);;
@@ -251,7 +230,7 @@ int executeMakeRec(Target* target, bool execute)
   return 1;  
 }
 
-
+//Sets a targets status as should be run or not depending on time stamps
 int updateCheck(Target** targetArray, int targetCount, bool override)
 {
   int i = 0;
@@ -263,6 +242,7 @@ int updateCheck(Target** targetArray, int targetCount, bool override)
   return 0;
 }
 
+//Helper for above updateCheck (this actually does the setting)
 int shouldExecute(Target* target, bool override)
 {
   if(override)
@@ -293,6 +273,7 @@ int shouldExecute(Target* target, bool override)
   return 0;
 }
 
+//Returns a list of all targets currently in tree
 char** getTreeTargets(Tree* tree)
 {
   int count = 0;
@@ -301,6 +282,7 @@ char** getTreeTargets(Tree* tree)
   return Namelist;
 }
 
+//Recursive helper for above
 void getTreeTargetsRec(Target* target, char** Namelist, int count)
 {
   int size = getSize(target->children);
@@ -318,6 +300,7 @@ void getTreeTargetsRec(Target* target, char** Namelist, int count)
   }
 }
 
+//Sets the char array of dependencies given a string of dependencies
 int setDependencies(Target* newtarget, char* dependencies)
 {
   int targetCount = 0;
@@ -330,7 +313,7 @@ int setDependencies(Target* newtarget, char* dependencies)
 
   element = strtok(dependencies," ");
   //printf("Current element is: \"%s\"\n", element);
-  while(element != NULL)
+  while(element != NULL && strcmp(element, " ") != 0)
   {
     newtarget->dependencies[targetCount] = (char *)malloc(MAX_DEPS*sizeof(char) + 1);
     newtarget->dependencies[targetCount++] = element;
@@ -340,6 +323,7 @@ int setDependencies(Target* newtarget, char* dependencies)
   return 0;
 }
 
+//Does malloc'ing for a new target
 Target* initTarget()
 {
   Target* target = (Target *)malloc(sizeof(Target));
@@ -350,7 +334,7 @@ Target* initTarget()
   return target;
 }
 
-
+//Does malloc'ing for a new tree
 Tree* initTree(void)
 {
   Tree* tree = (Tree *)malloc(sizeof(Tree));
@@ -360,11 +344,13 @@ Tree* initTree(void)
   return tree;
 }
 
+//Will add all connected targets to tree (anything not connected to mainTarget will not get added here)
 int addConnected(Target** list, Tree* tree)
 {
   return addConnectedRec(list,tree->root);
 }
 
+//Recursive helper for above
 int addConnectedRec(Target** list, Target* target)
 {
   if(target != NULL && target->name != NULL)
@@ -391,6 +377,7 @@ int addConnectedRec(Target** list, Target* target)
 
 }
 
+//Debug function to print out a target Array 
 void printTargets(Target** nodelist, int targetCount)
 {
   int i = 0;
@@ -413,6 +400,7 @@ void printTargets(Target** nodelist, int targetCount)
   }
 }
 
+//Deletes the given dependency from the char array 
 void removeDependency(char** list, int start)
 {
   while(list[start] != NULL)
@@ -422,18 +410,17 @@ void removeDependency(char** list, int start)
   }
 }
 
+//Searches tree to get target to start execute at
 Target* findTarget(char* name, Tree* tree)
 {
       return findTargetRec(name, tree->root);
 }
 
+//Recursive helper for above
 Target* findTargetRec(char* name, Target* target)
 {
   int i;
   int size = getSize(target->children);
-  // printf("Current is: \"%s\"\n", target->name);
-  // printf("Current has %d deps\n", size);
-  // printf("Name    is: \"%s\"\n", name);
   for(i = 0; i< size; i++)
   {
     result = findTargetRec(name, target->children[i]);
@@ -455,39 +442,33 @@ Target* findTargetRec(char* name, Target* target)
 
 }
 
-
-Tree* buildTree(Target** list,int nodeSum)
+//Builds the tree given a target array
+Tree* buildTree(Target** list, int targetCount)
 {
   bool isAddToRoot = true;
-  int i,j,roundCount = 0;
+  int i,j;
   Tree* tree = initTree();
 
   addtoRoot(list[0],tree);
 
   while(addConnected(list, tree) != 0)
   {
-    roundCount++;
-
-    if(roundCount > nodeSum)
-    {
-      fprintf(stderr, "There is cycle in dependencies, what are you trying to pull mister.\n");
-      exit(1);
-    }
+    //Do nothing
   }
 
-  char** allNodeName = getTreeTargets(tree);
+  char** allTargetName = getTreeTargets(tree);
   int x = 0;
-  while(allNodeName[x] != NULL)
+  while(allTargetName[x] != NULL)
   {
   	x++;
   }
 
-  for(i = 0; i< nodeSum; i++)
+  for(i = 0; i< targetCount; i++)
   {
    j = 0;
-    while(allNodeName[j] != NULL)
+    while(allTargetName[j] != NULL)
     {
-      if(strcmp(allNodeName[j], list[i]->name) == 0)
+      if(strcmp(allTargetName[j], list[i]->name) == 0)
       {
         isAddToRoot = false;
         break;

@@ -54,7 +54,6 @@ Target* findTarget(char*, Tree*); //Search tree for target
 Target* findTargetRec(char*, Target*); //Recursive helper for search tree
 Tree* buildTree(Target**, int); //Build tree using target array
 int addtoRoot(Target*, Tree*); //Add target too root of tree
-int stripforme(char* dependencies); //Strips leading whitespace
 char** getCmdArray(char* ); //Get array of command strings for exec'ing
 int getSize(Target**); //Return Size of array
 int executeMake(char*, Tree* ,bool); //Execute the tree
