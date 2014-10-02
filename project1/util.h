@@ -58,7 +58,7 @@ int getSize(Target**); //Return Size of array
 int executeMake(char*, Tree* ,bool); //Execute the tree
 int executeMakeRec(Target*, bool); //Recursive helper for execute tree
 char** getTreeTargets(Tree*); //Return string array of targets from the tree
-void getTreeTargetsRec(Target*, char**); //Recursive helper for string array from tree
+void getTreeTargetsRec(Target*, char**, int); //Recursive helper for string array from tree
 void setDependencies(Target*, char*); //Set dependencies for a target (relation to tree)
 int addConnected(Target** , Tree*); //Add connected targets to tree
 int addConnectedRec(Target**, Target*); //Recursive helper for adding connected to tree

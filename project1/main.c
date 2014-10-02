@@ -111,6 +111,7 @@ int main(int argc, char **argv)
 				strcpy(szMakefile, strdup(optarg));
 				break;
 			case 'n':
+				execute = false;
 				break;
 			case 'B':
 				break;
@@ -170,13 +171,7 @@ int main(int argc, char **argv)
 	//printTargets(targetArray, targetCount);
 
 	Tree* semiTree = buildTree(targetArray, targetCount);
-	// char** treeNames = checkTree(semiTree);
-	// int y = 0;
-	// while(treeNames[y] != NULL)
-	// {
-	// 	printf("Tree name is now: %s\n", treeNames[y]);
-	// 	y++;
-	// }
+
 	executeMake(mainTarget,semiTree,execute);
 
 	//after parsing the file, you'll want to check all dependencies (whether they are available targets or files)

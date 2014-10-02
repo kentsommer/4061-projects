@@ -95,7 +95,7 @@ int addDependency(Target* target, Target** list)
   {
     j = 0;
     isFound = false;
-    while(list[j] != NULL)
+    while(list[j] != NULL && list[j]->name != NULL && target != NULL && target->dependencies[i] != NULL)
     {
       if(strcmp(list[j]->name, target->dependencies[i]) == 0)
       {
@@ -208,31 +208,25 @@ int executeMakeRec(Target* target, bool execute)
 
 char** getTreeTargets(Tree* tree)
 {
+  int count = 0;
   char** Namelist = (char**)malloc(10 * sizeof(char*));
-  getTreeTargetsRec(tree->root, Namelist);
+  getTreeTargetsRec(tree->root, Namelist, count);
   return Namelist;
 }
 
-void getTreeTargetsRec(Target* target, char** Namelist)
+void getTreeTargetsRec(Target* target, char** Namelist, int count)
 {
   int size = getSize(target->children);
-  int i,j;
+  int i;
 
-  j = 0;
-
-  while(Namelist[j] != NULL && strcmp(Namelist[j], "") != 0)
-  {
-    j++;
-  }
-
-  Namelist[j] = (char*) malloc(10 * sizeof(char));
-  strcpy(Namelist[j],target->name);
+  Namelist[count] = (char*) malloc(10 * sizeof(char));
+  strcpy(Namelist[count],target->name);
 
   for(i=0;i<size;i++)
   {
     if(target->children[i] != NULL && strcmp(target->children[i]->name, "") != 0)
     {
-      getTreeTargetsRec(target->children[i], Namelist);
+      getTreeTargetsRec(target->children[i], Namelist, count++);
     }
   }
 }
@@ -286,6 +280,10 @@ int addConnected(Target** list, Tree* tree)
 
 int addConnectedRec(Target** list, Target* target)
 {
+  if(target != NULL && target->name != NULL)
+  {
+  	//printf("Current addConected is: %s\n", target->name);
+  }
   int i = 0,result = 0;
   if(target->children[0] != NULL && strcmp(target->children[i]->name, "") != 0)
   {
@@ -297,7 +295,7 @@ int addConnectedRec(Target** list, Target* target)
   }
   else
   {
-    if(target->dep_num != 0 && strcmp(target->name, "") != 0)
+    if(target->dep_num != 0 && strcmp(target->name, " ") != 0)
     {
       result = addDependency(target,list);
     }
@@ -377,12 +375,6 @@ Tree* buildTree(Target** list,int nodeSum)
   int i,j,roundCount = 0;
   Tree* tree = initTree();
 
-  // if(strcmp(list[0]->name,"all") != 0)
-  // {
-  //   fprintf(stderr, "ERROR: all is not on TOP of MAKEFILE, abort.\n");
-  //   exit(1);
-  // }
-
   addtoRoot(list[0],tree);
 
   while(addConnected(list, tree) != 0)
@@ -394,10 +386,14 @@ Tree* buildTree(Target** list,int nodeSum)
       fprintf(stderr, "There is cycle in dependencies, what are you trying to pull mister.\n");
       exit(1);
     }
-
   }
 
   char** allNodeName = getTreeTargets(tree);
+  int x = 0;
+  while(allNodeName[x] != NULL)
+  {
+  	x++;
+  }
 
   for(i = 0; i< nodeSum; i++)
   {
