@@ -47,6 +47,13 @@ int parse(char * lpszFileName)
         }
 
 		lpszLine = strtok(szLine, "\n"); //Remove newline character at end if there is one
+		
+		//Line is a comment line
+		if(strstr(lpszLine, "#"))
+		{
+			continue;
+		}
+
 		//Line is target line
 		if(strstr(lpszLine,":"))
 		{
