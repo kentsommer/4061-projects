@@ -6,8 +6,3 @@ You've stumbled upon a door where your mind is the key. There are none who will 
 This is a mirage.
 
 ![Sort Image](http://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Penrose-dreieck.svg/1129px-Penrose-dreieck.svg.png)
-
-
-This repository will serve as the hosting and colabrative platform for all 4061 projects. 
-
-Project 1: Creating an alterative tool to make
