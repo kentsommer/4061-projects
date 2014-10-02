@@ -189,6 +189,11 @@ int executeMake(char* rootName, Tree* tree, bool execute)
   else
   {
     subroot = findTarget(rootName,tree);
+    if(subroot == NULL)
+    {
+      printf("Yo... That target doesn't exist. Stopping\n");
+      exit(1);
+    }
     executeMakeRec(subroot,execute);
   }
   return 1;
@@ -207,6 +212,17 @@ int executeMakeRec(Target* target, bool execute)
     }
   }
 
+  if(!shouldExecute(target))
+  {
+    printf("Nothing to update here...\n");
+    exit(1);
+  }
+
+  if(strcmp(target->command, "echo") == 0)
+  {
+    return 1;
+  }
+
   if(execute && target->command != NULL)
   {
     printf("%s\n",target->command);
@@ -223,7 +239,7 @@ int executeMakeRec(Target* target, bool execute)
     }
     if (childpid != wait(NULL)) 
     {     
-      perror("Parent failed to wait due to signal or error");
+      perror("Warning, parent did not wait because");
       exit(1);
     }
     i++;
@@ -233,6 +249,30 @@ int executeMakeRec(Target* target, bool execute)
     printf("%s\n",target->command);
   }
   return 1;  
+}
+
+//Compare the last modified time between two files.
+//return -1, if any one of file does not exist. 
+//return 0, if both modified time is the same.
+//return 1, if first parameter is bigger (more recent)
+//return 2, if second parameter is bigger (more recent)
+bool shouldExecute(Target* target)
+{
+  int size = getSize(target->children);
+  int i = 0;
+  if(is_file_exist(target->name) == -1)
+  {
+    //printf("Returning true for %s\n", target->name);
+    return true;
+  }
+  while(i < size)
+  {
+    if(compare_modification_time(target->name, target->children[i]->name) == 2)
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 char** getTreeTargets(Tree* tree)
