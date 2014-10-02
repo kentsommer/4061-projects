@@ -59,8 +59,8 @@ char** getCmdArray(char* ); //Get array of command strings for exec'ing
 int getSize(Target**); //Return Size of array
 int executeMake(char*, Tree* ,bool); //Execute the tree
 int executeMakeRec(Target*, bool); //Recursive helper for execute tree
-int shouldExecute(Target* target);
-int updateCheck(Target** targetArray, int targetCount);
+int shouldExecute(Target*, bool);
+int updateCheck(Target**, int, bool);
 char** getTreeTargets(Tree*); //Return string array of targets from the tree
 void getTreeTargetsRec(Target*, char**, int); //Recursive helper for string array from tree
 int setDependencies(Target*, char*); //Set dependencies for a target (relation to tree)

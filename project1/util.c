@@ -252,19 +252,24 @@ int executeMakeRec(Target* target, bool execute)
 }
 
 
-int updateCheck(Target** targetArray, int targetCount)
+int updateCheck(Target** targetArray, int targetCount, bool override)
 {
   int i = 0;
   while(i < targetCount)
   {
-    shouldExecute(targetArray[i]);
+    shouldExecute(targetArray[i], override);
     i++;
   }
   return 0;
 }
 
-int shouldExecute(Target* target)
+int shouldExecute(Target* target, bool override)
 {
+  if(override)
+  {
+    target->execute = true;
+    return 0;
+  }
   int size = target->dep_num;
   int i = 0;
   if(is_file_exist(target->name) == -1)

@@ -116,6 +116,7 @@ int main(int argc, char **argv)
 	char * format = "f:hnBm:";
 	bool hasOpt = false;
 	bool execute = true;
+	bool alwaysRun = false;
 	
 	// Default makefile name will be Makefile
 	char szMakefile[64] = "Makefile";
@@ -133,6 +134,7 @@ int main(int argc, char **argv)
 				execute = false;
 				break;
 			case 'B':
+				alwaysRun = true;
 				break;
 			case 'm':
 				reDir = true;
@@ -191,7 +193,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	updateCheck(targetArray, targetCount);
+	updateCheck(targetArray, targetCount, alwaysRun);
 
 	//DEBUG THE TARGET LIST PRINT FUNCTION
 	//printTargets(targetArray, targetCount);
