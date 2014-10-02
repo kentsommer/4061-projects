@@ -2,7 +2,7 @@
 * login: somme282           
 * date: 10/02/2014
 * name: Kent Sommer, Kanad Gupta, Xi Chen                    
-* id: 4530009, 4381406, id for third name */
+* id: 4530009, 4381406, 4626350 */
 
 #include <errno.h>
 #include <fcntl.h>
