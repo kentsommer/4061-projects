@@ -1,0 +1,167 @@
+#include "wrapper.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <gtk/gtk.h>
+
+#define MAX_TAB 100
+
+/*
+ * Name:		uri_entered_cb
+ * Input arguments:'entry'-address bar where the url was entered
+ *			 'data'-auxiliary data sent along with the event
+ * Output arguments:void
+ * Function:	When the user hits the enter after entering the url
+ *			in the address bar, 'activate' event is generated
+ *			for the Widget Entry, for which 'uri_entered_cb'
+ *			callback is called. Controller-tab captures this event
+ *			and sends the browsing request to the router(/parent)
+ *			process.
+ */
+void uri_entered_cb(GtkWidget* entry, gpointer data)
+{
+	if(data == NULL)
+	{	
+		return;
+	}
+
+	browser_window* b_window = (browser_window*)data;
+	comm_channel channel = b_window->channel;
+	
+	// Get the tab index where the URL is to be rendered
+	int tab_index = query_tab_id_for_request(entry, data);
+
+	if(tab_index < 0)
+	{
+		printf("error\n");
+                return;
+	}
+
+	// Get the URL.
+	char* uri = get_entered_uri(entry);
+
+	// Now you get the URI from the controller.
+	// What is next? 
+	// Insert code here!!
+	// HINT: there is a callback in wrapper.c that should give
+        // you can idea of what the code should look like
+}
+
+/*
+ * Name:		new_tab_created_cb
+ * Input arguments:	'button' - whose click generated this callback
+ *			'data' - auxillary data passed along for handling
+ *			this event.
+ * Output arguments:    void
+ * Function:		This is the callback function for the 'create_new_tab'
+ *			event which is generated when the user clicks the '+'
+ *			button in the controller-tab. The controller-tab
+ *			redirects the request to the parent (/router) process
+ *			which then creates a new child process for creating
+ *			and managing this new tab.
+ */ 
+void new_tab_created_cb(GtkButton *button, gpointer data)
+{
+	if(data == NULL)
+	{
+		return;
+	}
+
+ 	int tab_index = ((browser_window*)data)->tab_index;
+	
+	//This channel have pipes to communicate with router. 
+	comm_channel channel = ((browser_window*)data)->channel;
+
+	// Create a new request of type CREATE_TAB
+	child_req_to_parent new_req;
+
+	// Users press + button on the control window. 
+	// What is next?
+	// Insert code here!!
+}
+
+/*
+ * Name:                run_control
+ * Input arguments:     'comm_channel': Includes pipes to communctaion with Router process
+ * Output arguments:    void
+ * Function:            This function will make a CONTROLLER window and be blocked until the program terminate.
+ */
+int run_control(comm_channel comm)
+{
+	browser_window * b_window = NULL;
+
+	//Create controler process
+	create_browser(CONTROLLER_TAB, 0, G_CALLBACK(new_tab_created_cb), G_CALLBACK(uri_entered_cb), &b_window, comm);
+
+	//go into infinite loop.
+	show_browser();
+	return 0;
+}
+
+/*
+* Name:                 run_url_browser
+* Input arguments:      'nTabIndex': URL-RENDERING tab index
+                        'comm_channel': Includes pipes to communctaion with Router process
+* Output arguments:     void
+* Function:             This function will make a URL-RENDRERING tab Note.
+*                       You need to use below functions to handle tab event. 
+*                       1. process_all_gtk_events();
+*                       2. process_single_gtk_event();
+*                       3. render_web_page_in_tab(uri, b_window);
+*                       For more details please Appendix B.
+*/
+int run_url_browser(int nTabIndex, comm_channel comm)
+{
+	browser_window * b_window = NULL;
+	
+	//Create controler window
+	create_browser(URL_RENDERING_TAB, nTabIndex, G_CALLBACK(new_tab_created_cb), G_CALLBACK(uri_entered_cb), &b_window, comm);
+
+	child_req_to_parent req;
+	
+	while (1) 
+	{
+		process_single_gtk_event();
+		usleep(1000);
+
+		//Need to communicate with Router process here.
+		//Insert code here!!
+	        //Handle each type of message (few mentioned below)
+		//  NEW_URI_ENTERED: render_web_page_in_tab(uri, b_window);
+		//  TAB_KILLED: process all gtk events();
+	}
+
+	return 0;
+}
+
+int main()
+{
+
+	comm_channel comm[MAX_TAB];
+	//This is Router process
+	//Make a controller and URL-RENDERING tab when user request it. 
+	//With pipes, this process should communicate with controller and tabs.
+
+	//Remove this printf when submitting solution
+	printf("Please read the instruction and comments on source code provided for the project 2\n");
+	//Insert code here!!
+	//create pipe for communication with controller
+	//Fork controller
+	//poll for requests from child on one to many pipes
+	//Use non-blocking read call to read data, identify the type of message and act accordingly
+	//  CREATE_TAB:
+	//	Create two pipes for bi-directional communication
+	//	Fork URL_RENDERING process
+	//  NEW_URI_ENTERED:
+	//	Write this message on the pipe connecting to ROUTER and URL_RENDERING process.
+	//  TAB_KILLED:
+	//	Close file descriptors of corresponding tab's pipes.
+	//When all child processes exit including controller, exit a success!
+	//For more accurate details see section 4.1 in writeup.
+
+	return 0;
+}
