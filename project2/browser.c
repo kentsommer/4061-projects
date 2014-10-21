@@ -8,7 +8,14 @@
 #include <errno.h>
 #include <gtk/gtk.h>
 
+extern int errno;
+
 #define MAX_TAB 100
+
+#define ERR_PRFX "ERROR | PROC %6d, LINE %4d"
+#define ERR_SUFX "\t%s\n"
+#define MSG_PRFX "messg | PROC %6d, LINE %4d"
+#define WRN_PRFX "warng | PROC %6d, LINE %4d"
 
 /*
  * Name:		uri_entered_cb
@@ -28,27 +35,41 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 	{	
 		return;
 	}
-
 	browser_window* b_window = (browser_window*)data;
 	comm_channel channel = b_window->channel;
+
+	// Get the URL.
+	char* uri = get_entered_uri(entry);
 	
 	// Get the tab index where the URL is to be rendered
 	int tab_index = query_tab_id_for_request(entry, data);
 
-	if(tab_index < 0)
+	if(tab_index < 0 || tab_index >= MAX_TAB)
 	{
-		printf("error\n");
+		printf("error yo, tab is out of range\n");
                 return;
 	}
+	else
+	{
+		//Make Request packet to send to router process
+		child_req_to_parent req;
 
-	// Get the URL.
-	char* uri = get_entered_uri(entry);
+		//Fill in req.type
+		req.type = NEW_URI_ENTERED;
 
-	// Now you get the URI from the controller.
-	// What is next? 
-	// Insert code here!!
-	// HINT: there is a callback in wrapper.c that should give
-        // you can idea of what the code should look like
+		//Fill in which tab to render in 
+		req.req.uri_req.render_in_tab = tab_index;
+
+		//Fill in the uri 
+		strcpy(req.req.uri_req.uri, uri);
+
+		//Send through proper file descriptor 
+		if(write(b_window->channel.child_to_parent_fd[1], &req, sizeof(child_req_to_parent)) == -1)
+		{
+			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX,
+				getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], stderror(errno));
+		}
+	}
 }
 
 /*
