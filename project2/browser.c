@@ -87,22 +87,50 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
  */ 
 void new_tab_created_cb(GtkButton *button, gpointer data)
 {
+	// KANAD WORK ON THIS HAHA!!
 	if(data == NULL)
 	{
 		return;
 	}
 
- 	int tab_index = ((browser_window*)data)->tab_index;
+	// Stole this from function above... if this is right, then #sweg
+	browser_window* b_window = (browser_window*)data;
 	
 	//This channel have pipes to communicate with router. 
 	comm_channel channel = ((browser_window*)data)->channel;
 
-	// Create a new request of type CREATE_TAB
-	child_req_to_parent new_req;
+ 	int tab_index = ((browser_window*)data)->tab_index; // gets updated on a higher level function
 
-	// Users press + button on the control window. 
-	// What is next?
-	// Insert code here!!
+	if(tab_index < 0 || tab_index >= MAX_TAB)
+	{
+		printf("error bish, tab is out of range\n");
+                return;
+	}	
+
+	else
+	{
+
+		// Create a new request of type CREATE_TAB
+		child_req_to_parent new_req;
+
+		//Fill in req.type
+		new_req.type = CREATE_TAB;
+
+		//Fill in the uri 
+		new_req.req.new_tab_req.tab_index = tab_index;
+
+		// Users press + button on the control window. 
+		// What is next?
+		// Insert code here!!
+
+		// Okay!!!
+		// Send through proper file descriptor 
+		if(write(b_window->channel.child_to_parent_fd[1], &new_req, sizeof(child_req_to_parent)) == -1)
+		{
+			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX,
+				getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], stderror(errno));
+		}
+	}
 }
 
 /*
