@@ -377,26 +377,8 @@ int main()
 	comm_channel comm[MAX_TAB];
 
 	comm_channel * channels = (comm_channel*)calloc(MAX_TAB, sizeof(comm_channel));
-	//This is Router process
-	//Make a controller and URL-RENDERING tab when user request it. 
-	//With pipes, this process should communicate with controller and tabs.
+	setup_process(channels, 0);
 
-	//Remove this printf when submitting solution
-	printf("Please read the instruction and comments on source code provided for the project 2\n");
-	//Insert code here!!
-	//create pipe for communication with controller
-	//Fork controller
-	//poll for requests from child on one to many pipes
-	//Use non-blocking read call to read data, identify the type of message and act accordingly
-	//  CREATE_TAB:
-	//	Create two pipes for bi-directional communication
-	//	Fork URL_RENDERING process
-	//  NEW_URI_ENTERED:
-	//	Write this message on the pipe connecting to ROUTER and URL_RENDERING process.
-	//  TAB_KILLED:
-	//	Close file descriptors of corresponding tab's pipes.
-	//When all child processes exit including controller, exit a success!
-	//For more accurate details see section 4.1 in writeup.
-
+	free(channels);
 	return 0;
 }
