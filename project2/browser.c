@@ -17,6 +17,8 @@ extern int errno;
 #define MSG_PRFX "messg | PROC %6d, LINE %4d"
 #define WRN_PRFX "warng | PROC %6d, LINE %4d"
 
+#define EXIT_STATUS_PIPE_ERROR -1
+
 /*
  * Name:		uri_entered_cb
  * Input arguments:'entry'-address bar where the url was entered
