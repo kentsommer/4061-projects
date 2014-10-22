@@ -87,27 +87,34 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
  */ 
 void new_tab_created_cb(GtkButton *button, gpointer data)
 {
+	// KANAD WORK ON THIS HAHA!!
 	if(data == NULL)
 	{
 		return;
 	}
-
- 	int tab_index = ((browser_window*)data)->tab_index;
 	
 	//This channel have pipes to communicate with router. 
 	comm_channel channel = ((browser_window*)data)->channel;
 
+ 	int tab_index = ((browser_window*)data)->tab_index; // gets updated on a higher level function
+
+	if(tab_index < 0 || tab_index >= MAX_TAB)
+	{
+		printf("error bish, tab is out of range\n");
+                return;
+	}
+
 	// Create a new request of type CREATE_TAB
 	child_req_to_parent new_req;
-
+	
 	//Populate it with request type, CREATE_TAB, and tab index
 	new_req.type = CREATE_TAB;
 	new_req.req.new_tab_req.tab_index = tab_index;
 
+	// Send through proper file descriptor 
 	if (write (channel.child_to_parent_fd[1], &new_req, sizeof(child_req_to_parent)) == -1)
 	{
-		fprintf(stderr, ERR_PRFX "  -- Failure to write to controller's channel.child_to_parent_fd[1]==%d: \n" ERR_SUFX,
-						getpid(), __LINE__, channel.child_to_parent_fd[1], strerror(errno));
+		fprintf(stderr, ERR_PRFX "  -- Failure to write to controller's channel.child_to_parent_fd[1]==%d: \n" ERR_SUFX, getpid(), __LINE__, channel.child_to_parent_fd[1], strerror(errno));
 	}
 }
 
