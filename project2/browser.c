@@ -19,6 +19,9 @@ extern int errno;
 
 #define EXIT_STATUS_PIPE_ERROR -1
 
+int setup_process(comm_channel* channels, int tab_index);
+int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count);
+
 /*
  * Name:		uri_entered_cb
  * Input arguments:'entry'-address bar where the url was entered
@@ -381,12 +384,8 @@ int setup_process(comm_channel* channels, int tab_index)
 
 int main()
 {
-
-	comm_channel comm[MAX_TAB];
-
 	comm_channel * channels = (comm_channel*)calloc(MAX_TAB, sizeof(comm_channel));
 	setup_process(channels, 0);
-
 	free(channels);
 	return 0;
 }
