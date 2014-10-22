@@ -191,26 +191,52 @@ int main()
 {
 
 	comm_channel comm[MAX_TAB];
+	comm_channel controller_router_channel;
 	//This is Router process
 	//Make a controller and URL-RENDERING tab when user request it. 
-	//With pipes, this process should communicate with controller and tabs.
-
-	//Remove this printf when submitting solution
-	printf("Please read the instruction and comments on source code provided for the project 2\n");
-	//Insert code here!!
-	//create pipe for communication with controller
+	int pid;
 	//Fork controller
-	//poll for requests from child on one to many pipes
-	//Use non-blocking read call to read data, identify the type of message and act accordingly
-	//  CREATE_TAB:
-	//	Create two pipes for bi-directional communication
-	//	Fork URL_RENDERING process
-	//  NEW_URI_ENTERED:
-	//	Write this message on the pipe connecting to ROUTER and URL_RENDERING process.
-	//  TAB_KILLED:
-	//	Close file descriptors of corresponding tab's pipes.
-	//When all child processes exit including controller, exit a success!
-	//For more accurate details see section 4.1 in writeup.
+	pid=fork();
+	if(pid==0)
+	{
+		//this is CONTROLLER
+		if(pipe(int controller_router_channel.parent_to_child_fd)==-1)
+		{
+				perror (“pipe error”);
+				exit (1);
+		}
+		if(pipe(int controller_router_channel.child_to_parent_fd)==-1)
+		{
+				perror (“pipe error”);
+				exit (1);
+		}
+		run_control(controller_router_channel);    //fork controller and use controller_router_channel to communicate
+		
+	}
+	if(pid>0)
+	{
+		//this is ROUTER
 
-	return 0;
+
+
+
+
+
+
+		//With pipes, this process should communicate with controller and tabs.
+		
+		//poll for requests from child on one to many pipes
+		//Use non-blocking read call to read data, identify the type of message and act accordingly
+		//  CREATE_TAB:
+		//	Create two pipes for bi-directional communication
+		//	Fork URL_RENDERING process
+		//  NEW_URI_ENTERED:
+		//	Write this message on the pipe connecting to ROUTER and URL_RENDERING process.
+		//  TAB_KILLED:
+		//	Close file descriptors of corresponding tab's pipes.
+		//When all child processes exit including controller, exit a success!
+		//For more accurate details see section 4.1 in writeup.
+
+		return 0;
+	}
 }
