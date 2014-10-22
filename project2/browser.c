@@ -230,12 +230,12 @@ int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
 						}
 						else
 						{
-							fprintf(stderr, WRN_PRFX "  -- Could not open tab %d - tab is out of range.\n", getpid(), __LINE__, max_tab_cnt);
+							fprintf(stderr, WRN_PRFX "  -- Could not open tab %d - tab is out of range.\n", getpid(), __LINE__, max_tab_count);
 						}
 						break;
 
 					case NEW_URI_ENTERED:
-						if(channels[msg.req.uri_req.render_in_tab].active)
+						if(channels[msg.req.uri_req.render_in_tab].open)
 						{
 							write(channels[msg.req.uri_req.render_in_tab].parent_to_child_fd[1], &msg, sizeof(child_req_to_parent));
 						}
@@ -255,7 +255,7 @@ int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
 							//Close all remaining open tabs
 							for(closing_tab_itr = 1; closing_tab_itr < total_tabs; closing_tab_itr++)
 							{
-								if(channels[closing_tab_itr].active)
+								if(channels[closing_tab_itr].open)
 								{
 									kill_tab(channels, closing_tab_itr);
 								}
@@ -348,7 +348,7 @@ int setup_process(comm_channel* channels, int tab_index)
 		//Check to see if controller. If it is set up controller else setup normal new tab
 		if((tab_index) == CONTROLLER_TAB)
 		{
-			if(run_control(comm_channel channels[tab_index]) == -1)
+			if(run_control(channels[tab_index]) == -1)
 			{
 				printf("Failed to create control\n");
 			}
@@ -373,9 +373,10 @@ int setup_process(comm_channel* channels, int tab_index)
 
 		if((tab_index) == CONTROLLER_TAB)
 		{
-			poll_for_children(channels, 1, int MAX_TAB);
+			poll_for_children(channels, 1, MAX_TAB);
 		}
 	}
+	return 0;
 }
 
 int main()
