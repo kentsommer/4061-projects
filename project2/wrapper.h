@@ -21,7 +21,8 @@ void show_browser();
 typedef struct comm_channel
 {
   int		parent_to_child_fd[2];
-  int		child_to_parent_fd[2];	
+  int		child_to_parent_fd[2];
+  bool 		open;	
 }comm_channel;
 
 typedef enum tab_type
