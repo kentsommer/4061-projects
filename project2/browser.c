@@ -206,7 +206,7 @@ int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
 		{
 			if(channels[i].open)
 			{
-				read_return = read(channels[i].child_to_parent_fd[0], &msg, sizeof(child_to_parent));
+				read_return = read(channels[i].child_to_parent_fd[0], &msg, sizeof(child_req_to_parent));
 				if(read_return == -1)
 				{
 					if(errno != EAGAIN)
