@@ -160,7 +160,7 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 	{
 		usleep(1000);
 
-		read_return = read(parent_to_child_fd, &msg, sizeof(child_req_to_parent));
+		read_return = read(comm.parent_to_child_fd[0], &msg, sizeof(child_req_to_parent));
 
 		if(read_return == -1 && errno == EAGAIN) // No data
 		{
