@@ -21,6 +21,7 @@ extern int errno;
 
 int setup_process(comm_channel* channels, int tab_index);
 int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count);
+int kill_tab(comm_channel* channels, int tab_index);
 
 /*
  * Name:		uri_entered_cb
@@ -191,6 +192,11 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 	}
 
 	return 0;
+}
+
+int kill_tab(comm_channel* channels, int tab_index)
+{
+	return 0; //LOL THIS DOESNT WORK;
 }
 
 int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
