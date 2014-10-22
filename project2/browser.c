@@ -92,9 +92,6 @@ void new_tab_created_cb(GtkButton *button, gpointer data)
 	{
 		return;
 	}
-
-	// Stole this from function above... if this is right, then #sweg
-	browser_window* b_window = (browser_window*)data;
 	
 	//This channel have pipes to communicate with router. 
 	comm_channel channel = ((browser_window*)data)->channel;
@@ -105,31 +102,19 @@ void new_tab_created_cb(GtkButton *button, gpointer data)
 	{
 		printf("error bish, tab is out of range\n");
                 return;
-	}	
+	}
 
-	else
+	// Create a new request of type CREATE_TAB
+	child_req_to_parent new_req;
+	
+	//Populate it with request type, CREATE_TAB, and tab index
+	new_req.type = CREATE_TAB;
+	new_req.req.new_tab_req.tab_index = tab_index;
+
+	// Send through proper file descriptor 
+	if (write (channel.child_to_parent_fd[1], &new_req, sizeof(child_req_to_parent)) == -1)
 	{
-
-		// Create a new request of type CREATE_TAB
-		child_req_to_parent new_req;
-
-		//Fill in req.type
-		new_req.type = CREATE_TAB;
-
-		//Fill in the uri 
-		new_req.req.new_tab_req.tab_index = tab_index;
-
-		// Users press + button on the control window. 
-		// What is next?
-		// Insert code here!!
-
-		// Okay!!!
-		// Send through proper file descriptor 
-		if(write(b_window->channel.child_to_parent_fd[1], &new_req, sizeof(child_req_to_parent)) == -1)
-		{
-			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX,
-				getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], stderror(errno));
-		}
+		fprintf(stderr, ERR_PRFX "  -- Failure to write to controller's channel.child_to_parent_fd[1]==%d: \n" ERR_SUFX, getpid(), __LINE__, channel.child_to_parent_fd[1], strerror(errno));
 	}
 }
 
