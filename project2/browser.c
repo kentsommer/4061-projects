@@ -36,7 +36,6 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 		return;
 	}
 	browser_window* b_window = (browser_window*)data;
-	comm_channel channel = b_window->channel;
 
 	// Get the URL.
 	char* uri = get_entered_uri(entry);
@@ -206,7 +205,7 @@ int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
 
 		for (i = 0; i < total_tabs; i++)
 		{
-			if(channels[i].active)
+			if(channels[i].open)
 			{
 				read_return = read(channels[i].child_to_parent_fd[0], &msg, sizeof(child_to_parent));
 				if(read_return == -1)
