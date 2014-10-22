@@ -65,8 +65,7 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 		//Send through proper file descriptor 
 		if(write(b_window->channel.child_to_parent_fd[1], &req, sizeof(child_req_to_parent)) == -1)
 		{
-			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX,
-				getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], stderror(errno));
+			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX, getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], strerror(errno));
 		}
 	}
 }
