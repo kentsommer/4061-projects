@@ -19,9 +19,10 @@ extern int errno;
 
 #define EXIT_STATUS_PIPE_ERROR -1
 
-int setup_process(comm_channel* channels, int tab_index);
-int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count);
-int kill_tab(comm_channel* channels, int tab_index);
+int setup_process(comm_channel* channels);
+comm_channel setup_pipes();
+int kill_tab(int fd);
+pid_t pids[100];
 
 /*
  * Name:		uri_entered_cb
@@ -51,8 +52,8 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 
 	if(tab_index < 0 || tab_index >= MAX_TAB)
 	{
-		printf("error yo, tab is out of range\n");
-                return;
+		perror("error yo, tab is out of range");
+        return;
 	}
 	else
 	{
@@ -71,7 +72,7 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 		//Send through proper file descriptor 
 		if(write(b_window->channel.child_to_parent_fd[1], &req, sizeof(child_req_to_parent)) == -1)
 		{
-			fprintf(stderr, ERR_PRFX " --Failed to write to controller channel.child_to_parent_fd[1]==%d\n" ERR_SUFX, getpid(), __LINE__, b_window->channel.child_to_parent_fd[1], strerror(errno));
+			perror("Failed to write");
 		}
 	}
 }
@@ -104,7 +105,7 @@ void new_tab_created_cb(GtkButton *button, gpointer data)
 
 	if(tab_index < 0 || tab_index >= MAX_TAB)
 	{
-		printf("error bish, tab is out of range\n");
+		perror("error bish, tab is out of range\n");
                 return;
 	}
 
@@ -113,12 +114,14 @@ void new_tab_created_cb(GtkButton *button, gpointer data)
 	
 	//Populate it with request type, CREATE_TAB, and tab index
 	new_req.type = CREATE_TAB;
-	new_req.req.new_tab_req.tab_index = tab_index;
-
+	create_new_tab_req newtab;
+	//new_req.req.new_tab_req.tab_index = tab_index;
+	newtab.tab_index = tab_index;
+	new_req.req.new_tab_req = newtab;
 	// Send through proper file descriptor 
-	if (write (channel.child_to_parent_fd[1], &new_req, sizeof(child_req_to_parent)) == -1)
+	if (write (channel.child_to_parent_fd[1], &new_req, sizeof(new_req)) == -1)
 	{
-		fprintf(stderr, ERR_PRFX "  -- Failure to write to controller's channel.child_to_parent_fd[1]==%d: \n" ERR_SUFX, getpid(), __LINE__, channel.child_to_parent_fd[1], strerror(errno));
+		perror("Failed to write");
 	}
 }
 
@@ -158,232 +161,312 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 	
 	//Create controler window
 	create_browser(URL_RENDERING_TAB, nTabIndex, G_CALLBACK(new_tab_created_cb), G_CALLBACK(uri_entered_cb), &b_window, comm);
-
-	child_req_to_parent msg;
-	size_t read_return;
 	
 	while (1) 
 	{
 		usleep(1000);
 
-		read_return = read(comm.parent_to_child_fd[0], &msg, sizeof(child_req_to_parent));
+		child_req_to_parent new_req;
 
-		if(read_return == -1 && errno == EAGAIN) // No data
+		if(read(comm.parent_to_child_fd[0], &new_req, sizeof(new_req)) < 0) // No data
 		{
-			process_single_gtk_event();
+			if(errno != EAGAIN)
+			{
+				perror("Error processes fd");
+				exit(-1);
+			}
 		}
 		else
 		{
-			switch(msg.type)
+			if(new_req.type == NEW_URI_ENTERED)
 			{
-				case NEW_URI_ENTERED:
-					render_web_page_in_tab(msg.req.uri_req.uri, b_window);
-					break;
+				render_web_page_in_tab(new_req.req.uri_req.uri, b_window);
+			}
 
-				case TAB_KILLED:
-					fprintf(stderr, MSG_PRFX " -- Tab %d is closed\n", getpid(), __LINE__, msg.req.killed_req.tab_index);
-					process_all_gtk_events();
-				case CREATE_TAB:
-					//Don't do anything, tabs don't handle this
-				default:
-					break;
+			if(new_req.type == TAB_KILLED)
+			{
+				kill_tab(comm.parent_to_child_fd[0]);
+				kill_tab(comm.parent_to_child_fd[1]);
+				kill_tab(comm.child_to_parent_fd[0]);
+				kill_tab(comm.child_to_parent_fd[1]);
+				return 0;
 			}
 		}
+		process_single_gtk_event();
 	}
 
 	return 0;
 }
 
-int kill_tab(comm_channel* channels, int tab_index)
+int kill_tab(int fd)
 {
-	return 0; //LOL THIS DOESNT WORK;
+	int c;
+	c =close(fd);
+	if(c < 0) 
+	{
+		perror("close error");
+		printf("on fd %d", fd);
+	}
+	return c;
 }
 
-int poll_for_children(comm_channel* channels, int total_tabs, int max_tab_count)
+comm_channel setup_pipes()
 {
-	//This needs to do stuff.
-	bool controller_open = true;
-	while(controller_open)
+	comm_channel channel;
+
+	int i;
+
+	int fileControl;
+
+	if(pipe(channel.parent_to_child_fd) < 0)
 	{
-		usleep(1000);
+		perror("Failed to create parent to child pipe");
+		exit(-1);
+	}
 
-		int i;
-		int closing_tab_itr;
-		size_t read_return;
+	if(pipe(channel.child_to_parent_fd) < 0)
+	{
+		perror("Failed to create child to parent pipe");
+		exit(-1);
+	}	
 
-		child_req_to_parent msg;
+	/* Set flags for parent to child fd*/
+	for(i = 0; i < 1; i++)
+	{
+		fileControl = fcntl(channel.parent_to_child_fd[i], F_GETFL, 0);
 
-		for (i = 0; i < total_tabs; i++)
+		if(fileControl == -1)
 		{
-			if(channels[i].open)
+			perror("Failed to get file flags");
+			exit(-1);
+		}
+
+		fileControl |= O_NONBLOCK;
+		if(fcntl(channel.parent_to_child_fd[i], F_SETFL, fileControl) == -1)
+		{
+			perror("Failed to set file flags");
+			exit(-1);
+		}
+	}
+
+	/* Set flags for child to parent fd*/
+	for(i = 0; i < 1; i++)
+	{
+		fileControl = fcntl(channel.child_to_parent_fd[i], F_GETFL, 0);
+
+		if(fileControl == -1)
+		{
+			perror("Failed to get file flags");
+			exit(-1);
+		}
+
+		fileControl |= O_NONBLOCK;
+		if(fcntl(channel.child_to_parent_fd[i], F_SETFL, fileControl) == -1)
+		{
+			perror("Failed to set file flags");
+			exit(-1);
+		}
+	}
+	return channel;
+}
+
+int setup_process(comm_channel* channels)
+{
+	int i;
+	int opentabs = 0;
+	comm_channel pipes = setup_pipes();
+
+	for(i=0; i <100; i++)
+	{
+		pids[i] = 0;
+	}
+
+	int numchildren= 0;
+	numchildren = numchildren +1;
+	pid_t controlPid = fork();
+
+	if(controlPid < 0)
+	{
+		perror("Failed to fork from controller tab");
+		return 1;
+	}
+
+	/*Run the CONTROLLER*/
+	if(controlPid == 0)
+	{
+		run_control(pipes);
+		exit(1);
+	}
+
+	else
+	{
+		while(numchildren > 0)
+		{
+			usleep(1000);
+			child_req_to_parent new_req;
+
+			/*Read in from controler*/
+			if(read(pipes.child_to_parent_fd[0], &new_req, sizeof(new_req)) < 0)
 			{
-				read_return = read(channels[i].child_to_parent_fd[0], &msg, sizeof(child_req_to_parent));
-				if(read_return == -1)
+				if(errno != EAGAIN)
 				{
-					if(errno != EAGAIN)
+					perror("Error reading from pipe");
+					exit(-1);
+				}
+			}
+			else 
+			{
+				if(new_req.type == CREATE_TAB)
+				{
+					if (opentabs < 99)
 					{
-						fprintf(stderr, ERR_PRFX "  -- Failure to read tab %d's child_to_parent_fd[0]==%d\n" ERR_SUFX, getpid(), __LINE__, i, channels[i].child_to_parent_fd[0], strerror(errno));
-						exit(EXIT_STATUS_PIPE_ERROR);
+						numchildren = numchildren +1;
+						opentabs = opentabs + 1;
+						/*Set up pipes for new tab*/
+						comm_channel urlPipes = setup_pipes();
+						int tabtoplace =-1;
+						for(i = 1; i <= opentabs; i++)// used to maintain numbering
+						{
+							if(pids[i] == 0)
+								{
+									tabtoplace = i;
+									break;
+								}
+						}
+						if(tabtoplace == -1)
+							{
+								perror("Problem creating tab");
+								exit(-1);
+							}
+
+						channels[tabtoplace] = urlPipes;
+						/*Fork a process for the new tab*/
+						pids[tabtoplace] = fork();
+						if(pids[tabtoplace] < 0)
+						{
+							perror("Failure to fork for CREATE_TAB");
+							exit(-1);
+						}
+
+					/*Tab process*/
+						if(pids[tabtoplace] == 0)
+						{	
+							run_url_browser(tabtoplace,channels[tabtoplace]);
+							exit(0);
+						}
+					}
+					else
+					{
+						printf("Too many tabs open please close one\n");
+					}
+				}
+				else if(new_req.type == NEW_URI_ENTERED)
+				{
+					int w;
+					if(new_req.req.uri_req.render_in_tab <= 0 || new_req.req.uri_req.render_in_tab > 99 || pids[new_req.req.uri_req.render_in_tab] == 0)
+					{
+						printf("Open tabs num %d", opentabs);
+						printf("Invalid tab\n");
+					}
+					else
+					{
+						w = write(channels[new_req.req.uri_req.render_in_tab].parent_to_child_fd[1],&new_req, sizeof(new_req)) ;
+						if(w < 0)
+						{
+							perror("problem writing uri to child");
+						}
+					}
+				}
+
+				else if(new_req.type == TAB_KILLED)
+				{
+					numchildren = numchildren -1;
+
+					kill_tab(pipes.parent_to_child_fd[0]);
+					kill_tab(pipes.parent_to_child_fd[1]);
+					kill_tab(pipes.child_to_parent_fd[0]);
+					kill_tab(pipes.child_to_parent_fd[1]);
+					for(i = 1; i <= 99 ; i++)
+					{
+						child_req_to_parent new_req;
+						new_req.type = TAB_KILLED;
+						new_req.req.killed_req.tab_index = i;
+
+						if(pids[i] != 0) //if it hasn't been closed yet 
+						{
+							opentabs = opentabs -1;
+							int w;
+							w =write(channels[i].parent_to_child_fd[1], &new_req, sizeof(new_req));
+							if (w < 0)
+						    {
+									perror("error writting tab kill");
+						    }
+							kill_tab(channels[i].parent_to_child_fd[0]);
+							kill_tab(channels[i].parent_to_child_fd[1]);
+							kill_tab(channels[i].child_to_parent_fd[0]);
+							kill_tab(channels[i].child_to_parent_fd[1]);
+							numchildren = numchildren -1;
+							int status;
+							pid_t change = waitpid(pids[i], &status, 0);
+							if(change != pids[i])
+							{
+								perror("Error, wait:");
+							}
+							pids[i] = 0;
+						}
 					}
 				}
 			}
-			else
+
+
+			//read from tabs 
+			for(i=1 ; i <= opentabs; i++)
 			{
-				switch(msg.type)
+				if(pids[i] != 0)
 				{
-					case CREATE_TAB:
-						if(total_tabs < MAX_TAB)
+					if(read(channels[i].child_to_parent_fd[0], &new_req, sizeof(new_req)) < 0)
+					{
+						if(errno != EAGAIN)
 						{
-							setup_process(channels, total_tabs);
-							total_tabs++;
+							perror("error");
+							exit(-1);
 						}
-						else
+					}
+					else
+					{
+						if(new_req.type==TAB_KILLED)
 						{
-							fprintf(stderr, WRN_PRFX "  -- Could not open tab %d - tab is out of range.\n", getpid(), __LINE__, max_tab_count);
-						}
-						break;
-
-					case NEW_URI_ENTERED:
-						if(channels[msg.req.uri_req.render_in_tab].open)
-						{
-							write(channels[msg.req.uri_req.render_in_tab].parent_to_child_fd[1], &msg, sizeof(child_req_to_parent));
-						}
-						else
-						{
-							fprintf(stderr, WRN_PRFX "  -- Could not open uri %s in tab %d - tab is not open.\n", getpid(), __LINE__, msg.req.uri_req.uri, msg.req.uri_req.render_in_tab);						
-						}
-						break;
-
-					case TAB_KILLED:
-						if(msg.req.killed_req.tab_index > CONTROLLER_TAB)
-						{
-							kill_tab(channels, msg.req.killed_req.tab_index);
-						}
-						else //Controller tab
-						{
-							//Close all remaining open tabs
-							for(closing_tab_itr = 1; closing_tab_itr < total_tabs; closing_tab_itr++)
+							child_req_to_parent new_req;
+							new_req.type = TAB_KILLED;
+							tab_killed_req killReq;
+							killReq.tab_index =i;
+							new_req.req.killed_req = killReq;
+							opentabs = opentabs -1;
+							if (write(channels[i].parent_to_child_fd[1], &new_req, sizeof(new_req)) < 0)
 							{
-								if(channels[closing_tab_itr].open)
-								{
-									kill_tab(channels, closing_tab_itr);
-								}
+								perror("failed writing tab killed");
 							}
-							controller_open = false;
-							kill_tab(channels, CONTROLLER_TAB);
-						}
-						break;
 
-					default:
-						fprintf(stderr, WRN_PRFX "  -- Um, what is this type yo, you broke it.\n", getpid(), __LINE__);
+							kill_tab(channels[i].parent_to_child_fd[0]);
+							kill_tab(channels[i].parent_to_child_fd[1]);
+							kill_tab(channels[i].child_to_parent_fd[0]);
+							kill_tab(channels[i].child_to_parent_fd[1]);
+							numchildren = numchildren -1;
+							int status;
+
+							pid_t change = waitpid(pids[i], &status, 0);
+							if(change != pids[i])
+							{
+								perror("error, wait:");
+							}
+							pids[i] = 0;
+
+						}
+					}
+
 				}
 			}
-		}
-	}
-	return 0;
-}
-
-int setup_process(comm_channel* channels, int tab_index)
-{
-	// Create bi-directional pipes (hence 2 pipes) for 
-	// communication between the parent and child process.
-	// Remember to error check.
-	int flags;
-
-	if (pipe(channels[tab_index].parent_to_child_fd) == -1) 
-	{
-		perror("Could not open parent_to_child pipe:");
-		fprintf(stderr, ERR_PRFX "  -- Could not open parent_to_child pipe:\n" ERR_SUFX, getpid(), __LINE__, strerror(errno));
-		return(EXIT_STATUS_PIPE_ERROR);
-	}
-	
-	if (pipe(channels[tab_index].child_to_parent_fd) == -1) 
-	{
-		perror("Could not open child_to_parent pipe:");
-		return(EXIT_STATUS_PIPE_ERROR);
-	}
-
-	flags = fcntl (channels[tab_index].child_to_parent_fd[0], F_GETFL, 0);
-	if (flags == -1)
-	{
-		fprintf(stderr, ERR_PRFX "  -- Failure to get tab %d's child_to_parent_fd[0]==%d flags:\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].child_to_parent_fd[0], strerror(errno));
-		return(EXIT_STATUS_PIPE_ERROR);
-	}
-	else
-	{
-		if (fcntl (channels[tab_index].child_to_parent_fd[0], F_SETFL, flags | O_NONBLOCK) == -1)
-		{
-			fprintf(stderr, ERR_PRFX "  -- Failure to set tab %d's child_to_parent_fd[0]==%d flag to NONBLOCK:\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].child_to_parent_fd[0], strerror(errno));
-			return(-1);
-		}
-	}
-  
-	flags = fcntl(channels[tab_index].parent_to_child_fd[0], F_GETFL, 0);
-	if (flags == -1)
-	{
-		fprintf(stderr, ERR_PRFX "  -- Failure to get tab %d's parent_to_child_fd[0]==%d flags:\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].child_to_parent_fd[0], strerror(errno));
-		return(EXIT_STATUS_PIPE_ERROR);
-	}
-	else
-	{
-		if (fcntl(channels[tab_index].parent_to_child_fd[0], F_SETFL, flags | O_NONBLOCK) == -1)
-		{
-			fprintf(stderr, ERR_PRFX "  -- Failure to set tab %d's parent_to_child_fd[0]==%d flag to NONBLOCK:\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].child_to_parent_fd[0], strerror(errno));
-			return(EXIT_STATUS_PIPE_ERROR);
-		}
-	}
-
-	/////////////////////////////////
-	//      CHILD STUFF (Fork)     //
-	/////////////////////////////////
-	channels[tab_index].open = true;
-	pid_t childpid = fork();
-	if (childpid == 0) //IS CHILD PROCESS
-	{
-		//Child process should close unused pipes and launch
-		// a window for either CONTROLLER or URL-RENDERING tabs.
-		if (close(channels[tab_index].child_to_parent_fd[0]) == -1)
-		{
-			fprintf(stderr, ERR_PRFX "  -- Failure to close tab %d's child_to_parent_fd[0]==%d\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].child_to_parent_fd[0], strerror(errno));
-			exit(EXIT_STATUS_PIPE_ERROR);
-		}
-		if (close(channels[tab_index].parent_to_child_fd[1]) == -1)
-		{
-			fprintf(stderr, ERR_PRFX "  -- Failure to close tab %d's parent_to_child_fd[1]==%d\n" ERR_SUFX, getpid(), __LINE__, tab_index, channels[tab_index].parent_to_child_fd[1], strerror(errno));
-			exit(EXIT_STATUS_PIPE_ERROR);
-		}
-
-
-		//Check to see if controller. If it is set up controller else setup normal new tab
-		if((tab_index) == CONTROLLER_TAB)
-		{
-			if(run_control(channels[tab_index]) == -1)
-			{
-				printf("Failed to create control\n");
-			}
-		}
-		else
-		{
-			if(run_url_browser(tab_index, channels[tab_index]) == -1)
-			{
-				printf("Failed to create new tab\n");
-			}
-		}
-		exit(0);
-	}
-	/////////////////////////////////
-	//     Parent STUFF (Fork)     //
-	/////////////////////////////////
-	else //This is a parent
-	{
-		//Close out the correct FDs and poll for requests from children
-		close(channels[tab_index].child_to_parent_fd[1]);
-		close(channels[tab_index].parent_to_child_fd[0]);
-
-		if((tab_index) == CONTROLLER_TAB)
-		{
-			poll_for_children(channels, 1, MAX_TAB);
-		}
+		}	
 	}
 	return 0;
 }
@@ -391,7 +474,7 @@ int setup_process(comm_channel* channels, int tab_index)
 int main()
 {
 	comm_channel * channels = (comm_channel*)calloc(MAX_TAB, sizeof(comm_channel));
-	setup_process(channels, 0);
+	setup_process(channels);
 	free(channels);
 	return 0;
 }

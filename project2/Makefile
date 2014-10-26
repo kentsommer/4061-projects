@@ -9,7 +9,7 @@ OBJ=browser
 all:  $(SOURCES) $(OBJ)
 
 $(OBJ): $(SOURCES)
-	$(CC) -L ${LIB} $(CFLAGS) $(LDFLAGS) $(SOURCES) -o $(OBJ)
+	$(CC) $(SOURCES) -L ${LIB} $(CFLAGS) $(LDFLAGS) -o $(OBJ)
 
 clean:
 	rm -rf $(OBJ)
