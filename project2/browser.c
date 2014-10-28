@@ -1,3 +1,8 @@
+/* CSci4061 F2014 Assignment 2
+* date: 10/27/14
+* name: Kent Sommer, Kanad Gupta, Xi Chen
+* id: somme282, kgupta, chen2806 */
+
 #include "wrapper.h"
 #include <sys/types.h>
 #include <unistd.h>
@@ -11,18 +16,13 @@
 extern int errno;
 
 #define MAX_TAB 100
-
-#define ERR_PRFX "ERROR | PROC %6d, LINE %4d"
-#define ERR_SUFX "\t%s\n"
-#define MSG_PRFX "messg | PROC %6d, LINE %4d"
-#define WRN_PRFX "warng | PROC %6d, LINE %4d"
-
 #define EXIT_STATUS_PIPE_ERROR -1
 
 int setup_process(comm_channel* channels);
 comm_channel setup_pipes();
 int kill_tab(int fd);
 pid_t pids[100];
+
 
 /*
  * Name:		uri_entered_cb
@@ -210,6 +210,14 @@ int kill_tab(int fd)
 	return c;
 }
 
+int close_tab(comm_channel tab)
+{
+	kill_tab(tab[i].parent_to_child_fd[0]);
+	kill_tab(tab[i].parent_to_child_fd[1]);
+	kill_tab(tab[i].child_to_parent_fd[0]);
+	kill_tab(tab[i].child_to_parent_fd[1]);
+}
+
 comm_channel setup_pipes()
 {
 	comm_channel channel;
@@ -323,9 +331,9 @@ int setup_process(comm_channel* channels)
 						numchildren = numchildren +1;
 						opentabs = opentabs + 1;
 						/*Set up pipes for new tab*/
-						comm_channel urlPipes = setup_pipes();
+						comm_channel urlPipes = setup_pipes(); //Open the bi-directional pipes for communication. 
 						int tabtoplace =-1;
-						for(i = 1; i <= opentabs; i++)// used to maintain numbering
+						for(i = 1; i <= opentabs; i++)//Used to maintain numbering
 						{
 							if(pids[i] == 0)
 								{
@@ -348,7 +356,7 @@ int setup_process(comm_channel* channels)
 							exit(-1);
 						}
 
-					/*Tab process*/
+						/*Tab process*/
 						if(pids[tabtoplace] == 0)
 						{	
 							run_url_browser(tabtoplace,channels[tabtoplace]);
@@ -365,7 +373,6 @@ int setup_process(comm_channel* channels)
 					int w;
 					if(new_req.req.uri_req.render_in_tab <= 0 || new_req.req.uri_req.render_in_tab > 99 || pids[new_req.req.uri_req.render_in_tab] == 0)
 					{
-						printf("Open tabs num %d", opentabs);
 						printf("Invalid tab\n");
 					}
 					else
@@ -380,12 +387,13 @@ int setup_process(comm_channel* channels)
 
 				else if(new_req.type == TAB_KILLED)
 				{
-					numchildren = numchildren -1;
-
-					kill_tab(pipes.parent_to_child_fd[0]);
-					kill_tab(pipes.parent_to_child_fd[1]);
-					kill_tab(pipes.child_to_parent_fd[0]);
-					kill_tab(pipes.child_to_parent_fd[1]);
+					numchildren = numchildren -1; //One less child, killed one
+					//Close out file descriptors and pipes
+					// kill_tab(pipes.parent_to_child_fd[0]);
+					// kill_tab(pipes.parent_to_child_fd[1]);
+					// kill_tab(pipes.child_to_parent_fd[0]);
+					// kill_tab(pipes.child_to_parent_fd[1]);
+					close_tab(pipes);
 					for(i = 1; i <= 99 ; i++)
 					{
 						child_req_to_parent new_req;
@@ -401,16 +409,18 @@ int setup_process(comm_channel* channels)
 						    {
 									perror("error writting tab kill");
 						    }
-							kill_tab(channels[i].parent_to_child_fd[0]);
-							kill_tab(channels[i].parent_to_child_fd[1]);
-							kill_tab(channels[i].child_to_parent_fd[0]);
-							kill_tab(channels[i].child_to_parent_fd[1]);
+						    //Close file descriptors and pipes 
+							// kill_tab(channels[i].parent_to_child_fd[0]);
+							// kill_tab(channels[i].parent_to_child_fd[1]);
+							// kill_tab(channels[i].child_to_parent_fd[0]);
+							// kill_tab(channels[i].child_to_parent_fd[1]);
+							close_tab(channels);
 							numchildren = numchildren -1;
 							int status;
 							pid_t change = waitpid(pids[i], &status, 0);
 							if(change != pids[i])
 							{
-								perror("Error, wait:");
+								perror("error, wait:");
 							}
 							pids[i] = 0;
 						}
@@ -446,11 +456,12 @@ int setup_process(comm_channel* channels)
 							{
 								perror("failed writing tab killed");
 							}
-
-							kill_tab(channels[i].parent_to_child_fd[0]);
-							kill_tab(channels[i].parent_to_child_fd[1]);
-							kill_tab(channels[i].child_to_parent_fd[0]);
-							kill_tab(channels[i].child_to_parent_fd[1]);
+							//Close out file descriptors and pipes
+							// kill_tab(channels[i].parent_to_child_fd[0]);
+							// kill_tab(channels[i].parent_to_child_fd[1]);
+							// kill_tab(channels[i].child_to_parent_fd[0]);
+							// kill_tab(channels[i].child_to_parent_fd[1]);
+							close_tab(channels);
 							numchildren = numchildren -1;
 							int status;
 
@@ -459,8 +470,7 @@ int setup_process(comm_channel* channels)
 							{
 								perror("error, wait:");
 							}
-							pids[i] = 0;
-
+							pids[i] = 0; //Reset the pid to 0 so we know it isn't running
 						}
 					}
 

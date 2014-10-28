@@ -1,0 +1,72 @@
+/* CSci4061 F2014 Assignment 2
+* date: 10/27/14
+* name: Kent Sommer, Kanad Gupta, Xi Chen
+* id: somme282, kgupta, chen2806 */
+
+    ____                  _              __     ___ 
+   / __ \ _____ ____     (_)___   _____ / /_   |__ \
+  / /_/ // ___// __ \   / // _ \ / ___// __/   __/ /
+ / ____// /   / /_/ /  / //  __// /__ / /_    / __/ 
+/_/    /_/    \____/__/ / \___/ \___/ \__/   /____/ 
+                   /___/                            
+
+//////////////////////////////////
+//                              //
+//      Purpose of Program      //
+//                              //
+//////////////////////////////////
+
+	The program is for accessing the web using a multi-process strategy so that 
+even if one tab hangs or crashes the rest of the browser can continue to operate. 
+
+//////////////////////////////////
+//                              //
+//        How to Compile        //
+//                              //
+//////////////////////////////////
+
+	In order to compile you will need gcc 4.7 as well as gtk2.0 and webkit 1.0.
+To compilation simply navigate to the project2 directory and run
+$ make
+
+//////////////////////////////////
+//                              //
+//    How to use from shell     //
+//                              //
+//////////////////////////////////
+
+	To use the program from the shell simply run
+$ ./browser 
+
+//////////////////////////////////
+//                              //
+//    What the program does     //
+//                              //
+//////////////////////////////////
+
+	The program creates a ROUTER process as well as a CONTROLLER child process. 
+For each new "tab" a new window and URL-RENDERING child process is created. 
+The router handles requests from the CONTROLLER and URL-RENDERING processes 
+and acts as the messenger between the two except for the kill tab call during which
+each processes (CONTROLLER or URL-RENDERING) deals directly with the router. 
+
+//////////////////////////////////
+//                              //
+//         Assumptions          //
+//                              //
+//////////////////////////////////
+
+	Maximum tabs open is 99 (99 tabs and one controller process). 
+URLs will be entered with `https://` at the beginning. 
+Will be run on CSE lab machines directly (X11 is buggy).
+If a tab hangs, we are not expected to close it when the controller exits (other tabs will close). 
+When a tab is opened, it opens in the lowest slot possible (4 open, close tab 2, next open tab will be tab 2)
+
+//////////////////////////////////
+//                              //
+//        Error Handling        //
+//                              //
+//////////////////////////////////
+
+	We used perror to give the last system error along with our 
+own helpful prints to notify the user what happened. 
