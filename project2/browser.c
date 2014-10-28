@@ -22,7 +22,7 @@ int setup_process(comm_channel* channels);
 comm_channel setup_pipes();
 int kill_tab(int fd);
 int close_tab(comm_channel* tab, int i);
-int close_tabn(comm_channel* tab);
+int close_tabn(comm_channel tab);
 pid_t pids[100];
 
 
