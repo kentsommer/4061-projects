@@ -21,6 +21,8 @@ extern int errno;
 int setup_process(comm_channel* channels);
 comm_channel setup_pipes();
 int kill_tab(int fd);
+int close_tab(comm_channel* tab, int i);
+int close_tabn(comm_channel* tab);
 pid_t pids[100];
 
 
@@ -185,7 +187,7 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 
 			if(new_req.type == TAB_KILLED)
 			{
-				close_tab(comm);
+				close_tabn(comm);
 				// kill_tab(comm.parent_to_child_fd[0]);
 				// kill_tab(comm.parent_to_child_fd[1]);
 				// kill_tab(comm.child_to_parent_fd[0]);
@@ -211,12 +213,22 @@ int kill_tab(int fd)
 	return c;
 }
 
-int close_tab(comm_channel* tab)
+int close_tab(comm_channel* tab, int i)
 {
 	kill_tab(tab[i].parent_to_child_fd[0]);
 	kill_tab(tab[i].parent_to_child_fd[1]);
 	kill_tab(tab[i].child_to_parent_fd[0]);
 	kill_tab(tab[i].child_to_parent_fd[1]);
+	return 0;
+}
+
+int close_tabn(comm_channel tab)
+{
+	kill_tab(tab.parent_to_child_fd[0]);
+	kill_tab(tab.parent_to_child_fd[1]);
+	kill_tab(tab.child_to_parent_fd[0]);
+	kill_tab(tab.child_to_parent_fd[1]);
+	return 0;
 }
 
 comm_channel setup_pipes()
@@ -394,7 +406,7 @@ int setup_process(comm_channel* channels)
 					// kill_tab(pipes.parent_to_child_fd[1]);
 					// kill_tab(pipes.child_to_parent_fd[0]);
 					// kill_tab(pipes.child_to_parent_fd[1]);
-					close_tab(pipes);
+					close_tabn(pipes);
 					for(i = 1; i <= 99 ; i++)
 					{
 						child_req_to_parent new_req;
@@ -415,7 +427,7 @@ int setup_process(comm_channel* channels)
 							// kill_tab(channels[i].parent_to_child_fd[1]);
 							// kill_tab(channels[i].child_to_parent_fd[0]);
 							// kill_tab(channels[i].child_to_parent_fd[1]);
-							close_tab(channels);
+							close_tab(channels, i);
 							numchildren = numchildren -1;
 							int status;
 							pid_t change = waitpid(pids[i], &status, 0);
@@ -462,7 +474,7 @@ int setup_process(comm_channel* channels)
 							// kill_tab(channels[i].parent_to_child_fd[1]);
 							// kill_tab(channels[i].child_to_parent_fd[0]);
 							// kill_tab(channels[i].child_to_parent_fd[1]);
-							close_tab(channels);
+							close_tab(channels, i);
 							numchildren = numchildren -1;
 							int status;
 
