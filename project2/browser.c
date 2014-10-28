@@ -16,9 +16,10 @@
 extern int errno;
 
 #define MAX_TAB 100
+#define MAX_OPEN_TAB 99
 #define EXIT_STATUS_PIPE_ERROR -1
 
-int setup_process(comm_channel* channels);
+int run_browser(comm_channel* channels);
 comm_channel setup_pipes();
 int kill_tab(int fd);
 int close_tab(comm_channel* tab, int i);
@@ -45,13 +46,10 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 		return;
 	}
 	browser_window* b_window = (browser_window*)data;
-
 	// Get the URL.
 	char* uri = get_entered_uri(entry);
-	
 	// Get the tab index where the URL is to be rendered
 	int tab_index = query_tab_id_for_request(entry, data);
-
 	if(tab_index < 0 || tab_index >= MAX_TAB)
 	{
 		perror("error yo, tab is out of range");
@@ -61,16 +59,12 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
 	{
 		//Make Request packet to send to router process
 		child_req_to_parent req;
-
 		//Fill in req.type
 		req.type = NEW_URI_ENTERED;
-
 		//Fill in which tab to render in 
 		req.req.uri_req.render_in_tab = tab_index;
-
 		//Fill in the uri 
 		strcpy(req.req.uri_req.uri, uri);
-
 		//Send through proper file descriptor 
 		if(write(b_window->channel.child_to_parent_fd[1], &req, sizeof(child_req_to_parent)) == -1)
 		{
@@ -94,30 +88,23 @@ void uri_entered_cb(GtkWidget* entry, gpointer data)
  */ 
 void new_tab_created_cb(GtkButton *button, gpointer data)
 {
-	// KANAD WORK ON THIS HAHA!!
 	if(data == NULL)
 	{
 		return;
 	}
-	
 	//This channel have pipes to communicate with router. 
 	comm_channel channel = ((browser_window*)data)->channel;
-
  	int tab_index = ((browser_window*)data)->tab_index; // gets updated on a higher level function
-
 	if(tab_index < 0 || tab_index >= MAX_TAB)
 	{
 		perror("error bish, tab is out of range\n");
                 return;
 	}
-
 	// Create a new request of type CREATE_TAB
 	child_req_to_parent new_req;
-	
-	//Populate it with request type, CREATE_TAB, and tab index
+	//Populate it with request type CREATE_TAB, and tab index
 	new_req.type = CREATE_TAB;
 	create_new_tab_req newtab;
-	//new_req.req.new_tab_req.tab_index = tab_index;
 	newtab.tab_index = tab_index;
 	new_req.req.new_tab_req = newtab;
 	// Send through proper file descriptor 
@@ -136,10 +123,8 @@ void new_tab_created_cb(GtkButton *button, gpointer data)
 int run_control(comm_channel comm)
 {
 	browser_window * b_window = NULL;
-
 	//Create controler process
 	create_browser(CONTROLLER_TAB, 0, G_CALLBACK(new_tab_created_cb), G_CALLBACK(uri_entered_cb), &b_window, comm);
-
 	//go into infinite loop.
 	show_browser();
 	return 0;
@@ -163,8 +148,7 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 	
 	//Create controler window
 	create_browser(URL_RENDERING_TAB, nTabIndex, G_CALLBACK(new_tab_created_cb), G_CALLBACK(uri_entered_cb), &b_window, comm);
-	
-	while (1) 
+	while (1) //Loop until we hit a return (tab killed)
 	{
 		usleep(1000);
 
@@ -174,7 +158,7 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 		{
 			if(errno != EAGAIN)
 			{
-				perror("Error processes fd");
+				perror("Error processing fd");
 				exit(-1);
 			}
 		}
@@ -188,16 +172,11 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 			if(new_req.type == TAB_KILLED)
 			{
 				close_tabn(comm);
-				// kill_tab(comm.parent_to_child_fd[0]);
-				// kill_tab(comm.parent_to_child_fd[1]);
-				// kill_tab(comm.child_to_parent_fd[0]);
-				// kill_tab(comm.child_to_parent_fd[1]);
 				return 0;
 			}
 		}
 		process_single_gtk_event();
 	}
-
 	return 0;
 }
 
@@ -208,7 +187,7 @@ int kill_tab(int fd)
 	if(c < 0) 
 	{
 		perror("close error");
-		printf("on fd %d", fd);
+		printf("on fd %d\n", fd);
 	}
 	return c;
 }
@@ -234,24 +213,22 @@ int close_tabn(comm_channel tab)
 comm_channel setup_pipes()
 {
 	comm_channel channel;
-
 	int i;
-
 	int fileControl;
-
+	//Open pipe
 	if(pipe(channel.parent_to_child_fd) < 0)
 	{
 		perror("Failed to create parent to child pipe");
 		exit(-1);
 	}
-
+	//Open pipe
 	if(pipe(channel.child_to_parent_fd) < 0)
 	{
 		perror("Failed to create child to parent pipe");
 		exit(-1);
 	}	
 
-	/* Set flags for parent to child fd*/
+	// Set flags
 	for(i = 0; i < 1; i++)
 	{
 		fileControl = fcntl(channel.parent_to_child_fd[i], F_GETFL, 0);
@@ -269,8 +246,7 @@ comm_channel setup_pipes()
 			exit(-1);
 		}
 	}
-
-	/* Set flags for child to parent fd*/
+	// Set flags
 	for(i = 0; i < 1; i++)
 	{
 		fileControl = fcntl(channel.child_to_parent_fd[i], F_GETFL, 0);
@@ -291,7 +267,7 @@ comm_channel setup_pipes()
 	return channel;
 }
 
-int setup_process(comm_channel* channels)
+int run_browser(comm_channel* channels)
 {
 	int i;
 	int opentabs = 0;
@@ -302,8 +278,8 @@ int setup_process(comm_channel* channels)
 		pids[i] = 0;
 	}
 
-	int numchildren= 0;
-	numchildren = numchildren +1;
+	int childprocesses= 0;
+	childprocesses = childprocesses + 1;
 	pid_t controlPid = fork();
 
 	if(controlPid < 0)
@@ -321,12 +297,12 @@ int setup_process(comm_channel* channels)
 
 	else
 	{
-		while(numchildren > 0)
+		while(childprocesses > 0)
 		{
 			usleep(1000);
 			child_req_to_parent new_req;
 
-			/*Read in from controler*/
+			/*Read from controler*/
 			if(read(pipes.child_to_parent_fd[0], &new_req, sizeof(new_req)) < 0)
 			{
 				if(errno != EAGAIN)
@@ -339,40 +315,38 @@ int setup_process(comm_channel* channels)
 			{
 				if(new_req.type == CREATE_TAB)
 				{
-					if (opentabs < 99)
+					if (opentabs < MAX_OPEN_TAB) //1 controller and 99 tabs 
 					{
-						numchildren = numchildren +1;
+						childprocesses = childprocesses +1;
 						opentabs = opentabs + 1;
-						/*Set up pipes for new tab*/
-						comm_channel urlPipes = setup_pipes(); //Open the bi-directional pipes for communication. 
-						int tabtoplace =-1;
-						for(i = 1; i <= opentabs; i++)//Used to maintain numbering
+						/*Set up pipes for communication and polling*/
+						comm_channel urlPipes = setup_pipes();
+						int tabtoopen =-1;
+						for(i = 1; i <= opentabs; i++) // 
 						{
 							if(pids[i] == 0)
 								{
-									tabtoplace = i;
+									tabtoopen = i;
 									break;
 								}
 						}
-						if(tabtoplace == -1)
-							{
-								perror("Problem creating tab");
-								exit(-1);
-							}
-
-						channels[tabtoplace] = urlPipes;
+						if(tabtoopen == -1)
+						{
+							perror("Problem creating tab");
+							exit(-1);
+						}
+						channels[tabtoopen] = urlPipes;
 						/*Fork a process for the new tab*/
-						pids[tabtoplace] = fork();
-						if(pids[tabtoplace] < 0)
+						pids[tabtoopen] = fork();
+						if(pids[tabtoopen] < 0)
 						{
 							perror("Failure to fork for CREATE_TAB");
 							exit(-1);
 						}
-
 						/*Tab process*/
-						if(pids[tabtoplace] == 0)
+						if(pids[tabtoopen] == 0)
 						{	
-							run_url_browser(tabtoplace,channels[tabtoplace]);
+							run_url_browser(tabtoopen,channels[tabtoopen]);
 							exit(0);
 						}
 					}
@@ -384,7 +358,8 @@ int setup_process(comm_channel* channels)
 				else if(new_req.type == NEW_URI_ENTERED)
 				{
 					int w;
-					if(new_req.req.uri_req.render_in_tab <= 0 || new_req.req.uri_req.render_in_tab > 99 || pids[new_req.req.uri_req.render_in_tab] == 0)
+					//Verify tab is not invalid
+					if(new_req.req.uri_req.render_in_tab <= 0 || new_req.req.uri_req.render_in_tab > MAX_OPEN_TAB || pids[new_req.req.uri_req.render_in_tab] == 0)
 					{
 						printf("Invalid tab\n");
 					}
@@ -400,19 +375,13 @@ int setup_process(comm_channel* channels)
 
 				else if(new_req.type == TAB_KILLED)
 				{
-					numchildren = numchildren -1; //One less child, killed one
-					//Close out file descriptors and pipes
-					// kill_tab(pipes.parent_to_child_fd[0]);
-					// kill_tab(pipes.parent_to_child_fd[1]);
-					// kill_tab(pipes.child_to_parent_fd[0]);
-					// kill_tab(pipes.child_to_parent_fd[1]);
+					childprocesses = childprocesses -1; //One less child, killed one
 					close_tabn(pipes);
-					for(i = 1; i <= 99 ; i++)
+					for(i = 1; i <= MAX_OPEN_TAB ; i++)
 					{
 						child_req_to_parent new_req;
 						new_req.type = TAB_KILLED;
 						new_req.req.killed_req.tab_index = i;
-
 						if(pids[i] != 0) //if it hasn't been closed yet 
 						{
 							opentabs = opentabs -1;
@@ -423,12 +392,8 @@ int setup_process(comm_channel* channels)
 									perror("error writting tab kill");
 						    }
 						    //Close file descriptors and pipes 
-							// kill_tab(channels[i].parent_to_child_fd[0]);
-							// kill_tab(channels[i].parent_to_child_fd[1]);
-							// kill_tab(channels[i].child_to_parent_fd[0]);
-							// kill_tab(channels[i].child_to_parent_fd[1]);
 							close_tab(channels, i);
-							numchildren = numchildren -1;
+							childprocesses = childprocesses -1;
 							int status;
 							pid_t change = waitpid(pids[i], &status, 0);
 							if(change != pids[i])
@@ -457,36 +422,31 @@ int setup_process(comm_channel* channels)
 					}
 					else
 					{
-						if(new_req.type==TAB_KILLED)
+						if(new_req.type == TAB_KILLED)
 						{
+							//Set req type, index, close tab 
 							child_req_to_parent new_req;
 							new_req.type = TAB_KILLED;
 							tab_killed_req killReq;
-							killReq.tab_index =i;
+							killReq.tab_index = i;
 							new_req.req.killed_req = killReq;
 							opentabs = opentabs -1;
 							if (write(channels[i].parent_to_child_fd[1], &new_req, sizeof(new_req)) < 0)
 							{
 								perror("failed writing tab killed");
 							}
-							//Close out file descriptors and pipes
-							// kill_tab(channels[i].parent_to_child_fd[0]);
-							// kill_tab(channels[i].parent_to_child_fd[1]);
-							// kill_tab(channels[i].child_to_parent_fd[0]);
-							// kill_tab(channels[i].child_to_parent_fd[1]);
+							//Close out tab
 							close_tab(channels, i);
-							numchildren = numchildren -1;
+							childprocesses = childprocesses -1;
 							int status;
-
 							pid_t change = waitpid(pids[i], &status, 0);
 							if(change != pids[i])
 							{
 								perror("error, wait:");
 							}
-							pids[i] = 0; //Reset the pid to 0 so we know it isn't running
+							pids[i] = 0; //Reset the pid
 						}
 					}
-
 				}
 			}
 		}	
@@ -496,8 +456,11 @@ int setup_process(comm_channel* channels)
 
 int main()
 {
-	comm_channel * channels = (comm_channel*)calloc(MAX_TAB, sizeof(comm_channel));
-	setup_process(channels);
+	//Allocate memory
+	comm_channel* channels = (comm_channel*)calloc(MAX_TAB, sizeof(comm_channel));
+	// starts router and controller processes. Polls, and returns once all windows including controller are closed
+	run_browser(channels);
+	//Free the allocated memory
 	free(channels);
 	return 0;
 }

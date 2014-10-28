@@ -69,4 +69,5 @@ When a tab is opened, it opens in the lowest slot possible (4 open, close tab 2,
 //////////////////////////////////
 
 	We used perror to give the last system error along with our 
-own helpful prints to notify the user what happened. 
+own helpful prints to notify the user what happened. Watch the terminal
+for helpful error messages. 
