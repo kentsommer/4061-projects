@@ -185,10 +185,11 @@ int run_url_browser(int nTabIndex, comm_channel comm)
 
 			if(new_req.type == TAB_KILLED)
 			{
-				kill_tab(comm.parent_to_child_fd[0]);
-				kill_tab(comm.parent_to_child_fd[1]);
-				kill_tab(comm.child_to_parent_fd[0]);
-				kill_tab(comm.child_to_parent_fd[1]);
+				close_tab(comm);
+				// kill_tab(comm.parent_to_child_fd[0]);
+				// kill_tab(comm.parent_to_child_fd[1]);
+				// kill_tab(comm.child_to_parent_fd[0]);
+				// kill_tab(comm.child_to_parent_fd[1]);
 				return 0;
 			}
 		}
@@ -210,7 +211,7 @@ int kill_tab(int fd)
 	return c;
 }
 
-int close_tab(comm_channel tab)
+int close_tab(comm_channel* tab)
 {
 	kill_tab(tab[i].parent_to_child_fd[0]);
 	kill_tab(tab[i].parent_to_child_fd[1]);
