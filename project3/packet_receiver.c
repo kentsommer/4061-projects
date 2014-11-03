@@ -17,26 +17,35 @@ static int pkt_total = 1;   /* how many packets to be received for the message *
    as aaabbb.
    Hint: "which" field in the packet will be useful.
  */
-static void packet_handler(int sig) {
+static void packet_handler(int sig) 
+{
   packet_t pkt;
   void *chunk;
-      
+  pkt = get_packet();
   // TODO get the "packet_queue_msg" from the queue.
-
-
+  if(pkt.which == 0)
+  {
+    pkt_total = pkt.how_many;
+  }
   // TODO extract the packet from "packet_queue_msg" and store it in the memory from memory manager
+  if((message.data[pkt.which] = (packet_t *) mm_get(&mm)) == NULL)
+  {
+    perror("Error, Failed to allocate memory");
+  }
+  memcpy(message.data[pkt.which], &pkt, sizeof(packet_t));
+  pkt_cnt++; 
+  message.num_packets = pkt_cnt;
 }
 
 /*
  * TODO - Create message from packets ... deallocate packets.
  * Return a pointer to the message on success, or NULL
  */
-static char *assemble_message() {
-
+static char *assemble_message() 
+{
   char *msg;
   int i;
   int msg_len = message.num_packets * sizeof(data_t);
-
   /* TODO - Allocate msg and assemble packets into it */
   char *msg_ptr;
   if((msg_ptr = (char *) malloc(sizeof(char) * msg_len + 1)) == NULL)
@@ -44,7 +53,6 @@ static char *assemble_message() {
     perror("ASSEMBLE_MSG: Failed to allocate memory to msg\n");
   }
   msg_ptr = msg;
-
   //copy packet data to message
   for(i = 0; i < pkt_total; i++)
   {
@@ -52,15 +60,12 @@ static char *assemble_message() {
     msg_ptr += sizeof(data_t);
     mm_put(&mm, message.data[i]);
   }
-
   //Set terminal char 
   *msg_ptr = '\0'; 
-
   /* reset these for next message */
   pkt_total = 1;
   pkt_cnt = 0;
   message.num_packets = 0;
-
   return msg;
 }
 
@@ -75,7 +80,10 @@ int main(int argc, char **argv) {
   char *msg;
 
   /* TODO - init memory manager for NUM_CHUNKS chunks of size CHUNK_SIZE each */
-
+  if(mm_init(&mm, NUM_CHUNKS, CHUNK_SIZE) == -1)
+  {
+    perror("Error, mm_init failed to allocate memory");
+  }
   message.num_packets = 0;
 
   /* TODO initialize msqid to send pid and receive messages from the message queue. Use the key in packet.h */
@@ -100,8 +108,7 @@ int main(int argc, char **argv) {
   }
 
   // TODO deallocate memory manager
-
+  mm_release(&mm);
   // TODO remove the queue once done
-  
   return EXIT_SUCCESS;
 }
