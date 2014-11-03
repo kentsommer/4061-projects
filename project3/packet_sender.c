@@ -99,19 +99,39 @@ int main(int argc, char **argv) {
   
   printf("Got pid : %d\n", receiver_pid);
  
-  /* TODO - set up alarm handler -- mask all signals within it */
-  /* The alarm handler will get the packet and send the packet to the receiver. Check packet_sender();
+  /* DONE!!
+   *TODO - set up alarm handler -- mask all signals within it
+   * The alarm handler will get the packet and send the packet to the receiver. Check packet_sender();
    * Don't care about the old mask, and SIGALRM will be blocked for us anyway,
    * but we want to make sure act is properly initialized.
-   */
+  */
+  struct sigaction alarm;
+  alarm.sa_handler = packet_handler;
+  sigemptyset(&alarm.sa_mask);
+  alarm.sa_flags = 0;
 
-  /*  
+  if(sigaction(SIGALRM, &alarm, NULL) == -1)
+  {
+    perror("Error, failed to set alarm to catch sig");
+  }
+
+  /*  DONE!!!
    * TODO - turn on alarm timer ...
    * use  INTERVAL and INTERVAL_USEC for sec and usec values
   */
+  struct itimerval timer;
+  timer.it_value.tv_sec = INTERVAL;
+  timer.it_value.tv_usec = INTERVAL_USEC;
+  timer.it_interval.tv_sec = INTERVAL;
+  timer.it_interval.tv_usec = INTERVAL_USEC;
+  if(setitimer(ITIMER_REAL, &timer, NULL) == -1)
+  {
+    perror
+  }
 
 
-  /* And the timer */
+
+  /* And the timer */ //IS there anything else needed?
 
   /* NOTE: the below code wont run now as you have not set the SIGALARM handler. Hence, 
      set up the SIGALARM handler and the timer first. */
