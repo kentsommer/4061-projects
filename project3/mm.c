@@ -74,7 +74,14 @@ static void timer_example() {
   /* start timer */
   gettimeofday (&time_s, NULL);
   mm_t *mm = NULL;
-  mm_init(mm,100,100);
+  mm_init(&mm,1000000,64);
+  int i;
+  for(i=0;i<1000000;i++)
+  {
+        mm_put(&mm,&mm);
+        mm_get(&mm);
+  }
+
   /* TODO - code you wish to time goes here */
   gettimeofday(&time_e, NULL);
 
@@ -82,8 +89,8 @@ static void timer_example() {
   comp_time(time_s, time_e) / 1000.0);
 }
 
-// int main( int argc, const char* argv[] )
-// {
-//   timer_example();
-//   return 0;
-// }
+int main( int argc, const char* argv[] )
+{
+  timer_example();
+  return 0;
+}
