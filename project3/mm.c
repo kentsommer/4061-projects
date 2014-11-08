@@ -20,22 +20,19 @@ double comp_time(struct timeval time_s, struct timeval time_e) {
 
 /* TODO - Implement.  Return 0 for success, or -1 and set errno on fail. */
 int mm_init(mm_t *mm, int hm, int sz) {
-  printf("0");
-  if(hm<=0||sz<=0)
+    if(hm<=0||sz<=0)
   {
     return -1;
   }
-  printf("1");
   mm->sizeOfChunk = sz;
   mm->numberOfChunks = hm;
   int totalSize = hm * sz;
-  printf("2");
   mm->data = (void *) malloc(sizeof(totalSize));
   mm->index=0;
-  if(mm->data==NULL)
-  {
-    return -1;
-  }
+  //if(mm->data==NULL)
+  //{
+   // return -1;
+  //}
   return 0;  /* TODO - return the right value */
 }
 
