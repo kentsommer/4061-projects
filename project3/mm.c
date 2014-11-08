@@ -18,6 +18,7 @@ double comp_time(struct timeval time_s, struct timeval time_e) {
   return elap;
 }
 
+
 int mm_init(mm_t *mm, int hm, int sz) 
 {
   int i, *status;
@@ -28,15 +29,12 @@ int mm_init(mm_t *mm, int hm, int sz)
     perror("Failed on malloc in init");
     return -1;
   }
-
   if((mm->status = malloc((hm + 1) * sizeof(int))) == NULL)
   {
     perror("Failed on malloc in init");
     return -1;
   }
-
   status = mm->status;
-
   for(i = 0; i < hm; i++)
   {
     *status = FREE;
