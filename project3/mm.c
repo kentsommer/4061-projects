@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "mm.h"
 
@@ -68,7 +69,7 @@ void mm_release(mm_t *mm) {
  * so you cannot call it from other files.  Instead, just follow this model
  * and implement your own timing code where you need it.
  */
-void timer_example() {
+static void timer_example() {
   struct timeval time_s, time_e;
   /* start timer */
   gettimeofday (&time_s, NULL);
@@ -79,4 +80,10 @@ void timer_example() {
 
   fprintf(stderr, "Time taken = %f msec\n",
   comp_time(time_s, time_e) / 1000.0);
+}
+
+int main( int argc, const char* argv[] )
+{
+  timer_example();
+  return 0;
 }
