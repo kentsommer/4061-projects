@@ -7,5 +7,11 @@ ps: packet_sender.c mm.o
 mm.o: mm.c
 	gcc -c mm.c
 
+test: mm.o
+	gcc -o main_mm main_mm.c mm.o
+	gcc -o main_malloc main_malloc.c mm.o
+	./main_mm
+	./main_malloc
+
 clean:
-	rm -rf mm.o packet_sender packet_receiver
+	rm -rf mm.o packet_sender packet_receiver main_mm main_malloc

@@ -84,17 +84,6 @@ void *mm_get(mm_t *mm)
   return chunk;
 }
 
-// void mm_put(mm_t *mm, void *chunk) {
-//   if(sizeof(chunk)>(mm->sizeOfChunk))
-//   {
-//     // give an error yo
-//   }
-//   //how to handle filled memory
-//   void* address=mm_get(mm);
-//   //*address=chunk;
-//   mm->index++;
-// }
-
 void mm_put(mm_t *mm, void *chunk) 
 {
   int index, *status;
@@ -113,13 +102,6 @@ void mm_put(mm_t *mm, void *chunk)
   status = mm->status + index;
   *status = FREE;
 }
-
-// void mm_release(mm_t *mm) {
-//   mm->sizeOfChunk=0;
-//   mm->numberOfChunks=0;
-//   free(mm->data);
-//   mm->index=0;
-// }
 
 void mm_release(mm_t *mm)
 {
