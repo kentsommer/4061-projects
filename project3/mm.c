@@ -74,7 +74,14 @@ static void timer_example() {
   /* start timer */
   gettimeofday (&time_s, NULL);
   mm_t *mm = NULL;
-  mm_init(mm,100,100);
+  mm_init(&mm,1000000,64);
+  int i;
+  for(i=0;i<1000000;i++)
+  {
+        mm_put(&mm,&mm);
+        mm_get(&mm);
+  }
+
   /* TODO - code you wish to time goes here */
   gettimeofday(&time_e, NULL);
 
