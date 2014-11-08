@@ -5,14 +5,17 @@
 
 #define INTERVAL 0
 #define INTERVAL_USEC 50000
-#define CHUNK_SIZE 64
-#define NUM_CHUNKS 1000000
+#define MAX_CHUNK_SIZE 64
+#define MAX_NUM_CHUNKS 1000000
+
 
 /* TODO - Fill this in */
 typedef struct {
-
-
-
+	int index; // that is the first free chunk we can use
+	void* data;
+	int sizeOfChunk;
+	int numberOfChunks;
+    
 } mm_t;
 
 /* TODO - Implement these in mm.c */
