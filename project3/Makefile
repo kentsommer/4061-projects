@@ -8,4 +8,4 @@ mm.o: mm.c
 	gcc -c mm.c
 
 clean:
-	rm -rf mm.o pr ps
+	rm -rf mm.o packet_sender packet_receiver

@@ -82,8 +82,8 @@ static void timer_example() {
   comp_time(time_s, time_e) / 1000.0);
 }
 
-int main( int argc, const char* argv[] )
-{
-  timer_example();
-  return 0;
-}
+// int main( int argc, const char* argv[] )
+// {
+//   timer_example();
+//   return 0;
+// }
