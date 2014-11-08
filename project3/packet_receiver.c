@@ -20,21 +20,21 @@ static int pkt_total = 1;   /* how many packets to be received for the message *
 static void packet_handler(int sig) 
 {
   packet_t pkt;
-  void *chunk;
-  pkt = get_packet();
-  // TODO get the "packet_queue_msg" from the queue.
-  if(pkt.which == 0)
+  void *chunk = mm_get(&mm);
+  
+  if(msgrcv(msqid, chunk, sizeof(packet_t), QUEUE_MSG_TYPE, 0) == -1)
   {
-    pkt_total = pkt.how_many;
+    perror("Failed to receive packet (msgrcv)");
+    exit(EXIT_FAILURE); 
   }
-  // TODO extract the packet from "packet_queue_msg" and store it in the memory from memory manager
-  if((message.data[pkt.which] = (packet_t *) mm_get(&mm)) == NULL)
-  {
-    perror("Error, Failed to allocate memory");
-  }
-  memcpy(message.data[pkt.which], &pkt, sizeof(packet_t));
-  pkt_cnt++; 
-  message.num_packets = pkt_cnt;
+
+  pkt = ((packet_queue_msg*) chunk)->pkt;
+  memmove(chunk, &pkt, sizeof(packet_t));
+
+  pkt_total = pkt.how_many;
+  message.num_packets = pkt.how_many;
+  message.data[pkt.which] = chunk;
+  pkt_cnt++;
 }
 
 /*
@@ -48,20 +48,25 @@ static char *assemble_message()
   int msg_len = message.num_packets * sizeof(data_t);
   /* TODO - Allocate msg and assemble packets into it */
   char *msg_ptr;
-  if((msg_ptr = (char *) malloc(sizeof(char) * msg_len + 1)) == NULL)
+  if((msg_ptr = (char *) mm_get(&mm)) == NULL)
   {
-    perror("ASSEMBLE_MSG: Failed to allocate memory to msg\n");
+    perror("Failed to allocate memory for msg");
+    return NULL;
   }
-  msg_ptr = msg;
-  //copy packet data to message
-  for(i = 0; i < pkt_total; i++)
+
+  if(message.num_packets != 0)
   {
-    memcpy(msg_ptr, ((packet_t *) message.data[i])->data, sizeof(data_t));
-    msg_ptr += sizeof(data_t);
-    mm_put(&mm, message.data[i]);
+    strcpy(msg, ((packet_t*)(message.data[0]))->data);
   }
-  //Set terminal char 
-  *msg_ptr = '\0'; 
+  else
+  {
+    return NULL;
+  }
+
+  for(i = 0; i < message.num_packets - 1; i++)
+  {
+    strcat(msg, ((packet_t *)(message.data[i]))->data);
+  }
   /* reset these for next message */
   pkt_total = 1;
   pkt_cnt = 0;
@@ -75,6 +80,13 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
+  struct sigaction pkt;
+  int pid = getpid();
+  pid_queue_msg pid_message;
+  pid_message.mtype = (long)PID_TYPE;
+  pid_message.pid = pid;
+
+
   int k = atoi(argv[1]); /* no of messages you will get from the sender */
   int i;
   char *msg;
@@ -87,10 +99,21 @@ int main(int argc, char **argv) {
   message.num_packets = 0;
 
   /* TODO initialize msqid to send pid and receive messages from the message queue. Use the key in packet.h */
-  
+  if((msqid = msgget(key, 0666)) == -1)
+  {
+    perror("Failed on msgget");
+  }
   /* TODO send process pid to the sender on the queue */
-  
+  if(msgsnd(msqid, &pid_message, sizeof(int), 0) == -1)
+  {
+    perror("Failed on msgsnd");
+  }
   /* TODO set up SIGIO handler to read incoming packets from the queue. Check packet_handler()*/
+  packet.sa_handler = packet_handler;
+  if(sigaction(SIGIO, &packet, NULL) == -1)
+  {
+    perror("Failed on setting up SIGIO");
+  }
 
   for (i = 1; i <= k; i++) {
     while (pkt_cnt < pkt_total) {
@@ -106,9 +129,9 @@ int main(int argc, char **argv) {
       free(msg);
     }
   }
-
   // TODO deallocate memory manager
   mm_release(&mm);
   // TODO remove the queue once done
+  msgctl(,sqid, IPC_RMID, NULL);
   return EXIT_SUCCESS;
 }

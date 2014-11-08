@@ -73,9 +73,14 @@ static void packet_sender(int sig) {
   pkt_cnt++;
 
   // TODO Create a packet_queue_msg for the current packet.
+  packet_queue_msg message = {QUEUE_MSG_TYPE, pkt};
   // TODO send this packet_queue_msg to the receiver. Handle any error appropriately.
+  if(msgsnd(msqid, &message, sizeof(packet_queue_msg), 0) == -1)
+  {
+    perror("Failed while doing msgsnd");
+  }
   // TODO send SIGIO to the receiver if message sending was successful.
-  
+  kill(receiver_pid, SIGIO);
 }
 
 int main(int argc, char **argv) {
@@ -94,9 +99,17 @@ int main(int argc, char **argv) {
   struct sigaction act;           
 
   /* TODO Create a message queue */ 
- 
+  if((msqid = msgget(key, IPC_CREAT | 0666)) == -1)
+  {
+    perror("Failed while doing msgget");
+  }
   /*  TODO read the receiver pid from the queue and store it for future use*/
-  
+  if(msgrcv(msqid, &buf, sizeof(int), PID_MSG_TYPE, 0) == -1)
+  {
+    perror("Failed while going msgrcv");
+  }
+  receiver_pid = buf.pid;
+
   printf("Got pid : %d\n", receiver_pid);
  
   /* DONE!!
@@ -128,9 +141,6 @@ int main(int argc, char **argv) {
   {
     perror
   }
-
-
-
   /* And the timer */ //IS there anything else needed?
 
   /* NOTE: the below code wont run now as you have not set the SIGALARM handler. Hence, 
