@@ -109,8 +109,8 @@ int main(int argc, char **argv) {
     perror("Failed on msgsnd");
   }
   /* TODO set up SIGIO handler to read incoming packets from the queue. Check packet_handler()*/
-  packet.sa_handler = packet_handler;
-  if(sigaction(SIGIO, &packet, NULL) == -1)
+  pkt.sa_handler = packet_handler;
+  if(sigaction(SIGIO, &pkt, NULL) == -1)
   {
     perror("Failed on setting up SIGIO");
   }
@@ -132,6 +132,6 @@ int main(int argc, char **argv) {
   // TODO deallocate memory manager
   mm_release(&mm);
   // TODO remove the queue once done
-  msgctl(,sqid, IPC_RMID, NULL);
+  msgctl(msqid, IPC_RMID, NULL);
   return EXIT_SUCCESS;
 }

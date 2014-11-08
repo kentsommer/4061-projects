@@ -85,6 +85,7 @@ static void packet_sender(int sig) {
 
 int main(int argc, char **argv) {
 
+  pid_queue_msg queuemsg;
   if (argc != 2) {
     printf("Usage: packet_sender <num of messages to send>\n");
     exit(-1);
@@ -104,11 +105,11 @@ int main(int argc, char **argv) {
     perror("Failed while doing msgget");
   }
   /*  TODO read the receiver pid from the queue and store it for future use*/
-  if(msgrcv(msqid, &buf, sizeof(int), PID_MSG_TYPE, 0) == -1)
+  if(msgrcv(msqid, &queuemsg, sizeof(int), PID_TYPE, 0) == -1)
   {
     perror("Failed while going msgrcv");
   }
-  receiver_pid = buf.pid;
+  receiver_pid = queuemsg.pid;
 
   printf("Got pid : %d\n", receiver_pid);
  
@@ -119,7 +120,7 @@ int main(int argc, char **argv) {
    * but we want to make sure act is properly initialized.
   */
   struct sigaction alarm;
-  alarm.sa_handler = packet_handler;
+  alarm.sa_handler = packet_sender;
   sigemptyset(&alarm.sa_mask);
   alarm.sa_flags = 0;
 
@@ -139,7 +140,7 @@ int main(int argc, char **argv) {
   timer.it_interval.tv_usec = INTERVAL_USEC;
   if(setitimer(ITIMER_REAL, &timer, NULL) == -1)
   {
-    perror
+    perror("Failed doing setitimer");
   }
   /* And the timer */ //IS there anything else needed?
 

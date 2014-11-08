@@ -4,9 +4,8 @@
 #include <sys/time.h>
 
 #define INTERVAL 0
-#define INTERVAL_USEC 50000
-#define MAX_CHUNK_SIZE 64
-#define MAX_NUM_CHUNKS 1000000
+#define CHUNK_SIZE 64
+#define NUM_CHUNKS 1000000
 
 
 /* TODO - Fill this in */
