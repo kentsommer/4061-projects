@@ -18,51 +18,120 @@ double comp_time(struct timeval time_s, struct timeval time_e) {
   return elap;
 }
 
-/* TODO - Implement.  Return 0 for success, or -1 and set errno on fail. */
-int mm_init(mm_t *mm, int hm, int sz) {
-  printf("0");
-  if(hm<=0||sz<=0)
+int mm_init(mm_t *mm, int hm, int sz) 
+{
+  int i, *status;
+  cs = sz;
+
+  if((mm->data = malloc((hm + 1) * sizeof(int))) == NULL)
   {
+    perror("Failed on malloc in init");
     return -1;
   }
-  printf("1");
-  mm->sizeOfChunk = sz;
-  mm->numberOfChunks = hm;
-  int totalSize = hm * sz;
-  printf("2");
-  mm->data = (void *) malloc(sizeof(totalSize));
-  mm->index=0;
-  if(mm->data==NULL)
+
+  if((mm->status = malloc((hm + 1) * sizeof(int))) == NULL)
   {
+    perror("Failed on malloc in init");
     return -1;
   }
-  return 0;  /* TODO - return the right value */
-}
 
-void *mm_get(mm_t *mm) {
-  void* address;
-  address=mm->data  + (mm->index)*(mm->sizeOfChunk);
-  // may need calibrate constnat
-  return address;
-}
+  status = mm->status;
 
-void mm_put(mm_t *mm, void *chunk) {
-  if(sizeof(chunk)>(mm->sizeOfChunk))
+  for(i = 0; i < hm; i++)
   {
-    // give an error yo
+    *status = FREE;
+    status++;
   }
-  //how to handle filled memory
-  void* address=mm_get(mm);
-  //*address=chunk;
-  mm->index++;
+  *status = END;
+  mm->position = 0;
+  return 0;
 }
 
-void mm_release(mm_t *mm) {
-  mm->sizeOfChunk=0;
-  mm->numberOfChunks=0;
+void *mm_get(mm_t *mm)
+{
+  void *chunk;
+  int position, *status;
+  status = mm->status + mm->position;
+  switch(*status)
+  {
+    case FREE:
+      chunk = mm->data + (mm->position * cs);
+      *status = TAKEN;
+      mm->position++;
+      break;
+    case TAKEN:
+      position = 1;
+      status = mm->status;
+      while(*status == TAKEN)
+      {
+        status++;
+        position++;
+      }
+      if(*status == END)
+      {
+        return NULL;
+      }
+      else
+      {
+        chunk = mm->data + (position * cs);
+        *status = TAKEN;
+        mm->position = position;
+      }
+      break;
+    case END:
+      return NULL;
+    default:
+      perror("Failed trying to match status");
+  }
+  return chunk;
+}
+
+// void mm_put(mm_t *mm, void *chunk) {
+//   if(sizeof(chunk)>(mm->sizeOfChunk))
+//   {
+//     // give an error yo
+//   }
+//   //how to handle filled memory
+//   void* address=mm_get(mm);
+//   //*address=chunk;
+//   mm->index++;
+// }
+
+void mm_put(mm_t *mm, void *chunk) 
+{
+  int index, *status;
+  if(cs > 0)
+  {
+    index = (((char *) chunk) - ((char *) mm->data)) / cs;
+  }
+  else
+  {
+    perror("error, invalid chunky size");
+  }
+  if(index < mm->position)
+  {
+    mm->position = index;
+  }
+  status = mm->status + index;
+  *status = FREE;
+}
+
+// void mm_release(mm_t *mm) {
+//   mm->sizeOfChunk=0;
+//   mm->numberOfChunks=0;
+//   free(mm->data);
+//   mm->index=0;
+// }
+
+void mm_release(mm_t *mm)
+{
+  if(mm == NULL)
+  {
+    perror("Failed. Can't free as pointer is NULL");
+  }
   free(mm->data);
-  mm->index=0;
 }
+
 /*
  * TODO - This is just an example of how to use the timer.  Notice that
  * this function is not included in mm_public.h, and it is defined as static,
@@ -89,8 +158,8 @@ static void timer_example() {
   comp_time(time_s, time_e) / 1000.0);
 }
 
-int main( int argc, const char* argv[] )
-{
-  timer_example();
-  return 0;
-}
+// int main( int argc, const char* argv[] )
+// {
+//   timer_example();
+//   return 0;
+// }

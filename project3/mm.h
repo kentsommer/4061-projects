@@ -6,6 +6,11 @@
 #define INTERVAL 0
 #define CHUNK_SIZE 64
 #define NUM_CHUNKS 1000000
+#define FREE 0
+#define TAKEN 1
+#define END 2
+
+static int cs; 
 
 
 /* TODO - Fill this in */
@@ -14,7 +19,8 @@ typedef struct {
 	void* data;
 	int sizeOfChunk;
 	int numberOfChunks;
-    
+    int *status; //FREE = 0, TAKEN = 1, END = 2;
+    int position; 
 } mm_t;
 
 /* TODO - Implement these in mm.c */
