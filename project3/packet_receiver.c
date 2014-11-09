@@ -19,7 +19,6 @@ static int pkt_total = 1;   /* how many packets to be received for the message *
  */
 static void packet_handler(int sig) 
 {
-  printf("In packet Handlerm sig is: %d\n", sig);
   packet_t pkt;
   void *chunk = mm_get(&mm);
   
@@ -30,7 +29,7 @@ static void packet_handler(int sig)
   }
   else
   {
-  	printf("Got message\n");
+  	//printf("Got message\n");
   }
 
   pkt = ((packet_queue_msg*) chunk)->pkt;
@@ -39,7 +38,7 @@ static void packet_handler(int sig)
   pkt_total = pkt.how_many;
   message.num_packets = pkt.how_many;
   message.data[pkt.which] = chunk;
-  printf("Number of packets is: %d\n", pkt.how_many);
+  //printf("Number of packets is: %d\n", pkt.how_many);
   pkt_cnt++;
 }
 
@@ -51,10 +50,10 @@ static char *assemble_message()
 {
   char *msg;
   int i;
-  //int msg_len = message.num_packets * sizeof(data_t);
+  int msg_len = message.num_packets * sizeof(data_t);
   /* TODO - Allocate msg and assemble packets into it */
   char *msg_ptr;
-  if((msg = mm_get(&mm)) == NULL)
+  if((msg = (char *) malloc(sizeof(char) * msg_len + 1)) == NULL)        // (msg = mm_get(&mm)) == NULL)
   {
     perror("Failed to allocate memory for msg");
     return NULL;
@@ -107,7 +106,7 @@ int main(int argc, char **argv) {
   }
   else
   {
-  	printf("Msqid is: %d\n", msqid);
+  	//printf("Msqid is: %d\n", msqid);
   }
   /* TODO send process pid to the sender on the queue */
   if(msgsnd(msqid, &pid_message, sizeof(int), 0) == -1)
@@ -125,7 +124,6 @@ int main(int argc, char **argv) {
     while (pkt_cnt < pkt_total) {
       pause(); /* block until next packet */
     }
-  	printf("About to call assemble message");
     msg = assemble_message();
     if (msg == NULL) {
       perror("Failed to assemble message");
@@ -136,7 +134,6 @@ int main(int argc, char **argv) {
     }
   }
   // TODO deallocate memory manager
-  printf("About to release");
   mm_release(&mm);
   // TODO remove the queue once done
   msgctl(msqid, IPC_RMID, NULL);

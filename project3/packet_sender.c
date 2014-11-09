@@ -63,7 +63,6 @@ static packet_t get_packet() {
 }
 
 static void packet_sender(int sig) {
-	printf("In packet sender, sig is: %d\n", sig);
   packet_t pkt;
 
   pkt = get_packet();
@@ -110,7 +109,7 @@ int main(int argc, char **argv) {
   }
   else
   {
-  	printf("msgget succeeded, msqid is: %d\n", msqid);
+  	//printf("msgget succeeded, msqid is: %d\n", msqid);
   }
   /*  TODO read the receiver pid from the queue and store it for future use*/
   if(msgrcv(msqid, &queuemsg, sizeof(int), PID_TYPE, 0) == -1)
@@ -119,18 +118,13 @@ int main(int argc, char **argv) {
   }
   receiver_pid = queuemsg.pid;
 
-
-  printf("Got pid : %d\n", receiver_pid);
- 
-
   act.sa_handler = packet_sender;
   act.sa_flags = 0;
   sigemptyset(&act.sa_mask);
 
   if(sigaction(SIGALRM, &act, NULL) == -1)
   {
-      fprintf(stderr, "Error: sigaction error.\nProgram will now exit.\n");
-      return EXIT_FAILURE;
+      perror("Failed: sigaction error.")
   }
   /* DONE!!
    *TODO - set up alarm handler -- mask all signals within it
