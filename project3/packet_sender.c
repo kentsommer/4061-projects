@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 
   if(sigaction(SIGALRM, &act, NULL) == -1)
   {
-      perror("Failed: sigaction error.")
+      perror("Failed: sigaction error.");
   }
   /* DONE!!
    *TODO - set up alarm handler -- mask all signals within it
