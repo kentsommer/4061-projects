@@ -103,13 +103,22 @@ void mm_put(mm_t *mm, void *chunk)
   *status = FREE;
 }
 
+// void mm_release(mm_t *mm)
+// {
+//   if(mm == NULL)
+//   {
+//     perror("Failed. Can't free as pointer is NULL");
+//   }
+//   free(mm->data);
+// }
+
 void mm_release(mm_t *mm)
 {
   if(mm == NULL)
   {
     perror("Failed. Can't free as pointer is NULL");
   }
-  free(mm->data);
+  free(mm);
 }
 
 /*
@@ -118,25 +127,25 @@ void mm_release(mm_t *mm)
  * so you cannot call it from other files.  Instead, just follow this model
  * and implement your own timing code where you need it.
  */
-static void timer_example() {
-  struct timeval time_s, time_e;
-  /* start timer */
-  gettimeofday (&time_s, NULL);
-  mm_t *mm = NULL;
-  mm_init(&mm,1000000,64);
-  int i;
-  for(i=0;i<1000000;i++)
-  {
-        mm_put(&mm,&mm);
-        mm_get(&mm);
-  }
+// static void timer_example() {
+//   struct timeval time_s, time_e;
+//   /* start timer */
+//   gettimeofday (&time_s, NULL);
+//   mm_t *mm = NULL;
+//   mm_init(&mm,1000000,64);
+//   int i;
+//   for(i=0;i<1000000;i++)
+//   {
+//         mm_put(&mm,&mm);
+//         mm_get(&mm);
+//   }
 
-  /* TODO - code you wish to time goes here */
-  gettimeofday(&time_e, NULL);
+//   /* TODO - code you wish to time goes here */
+//   gettimeofday(&time_e, NULL);
 
-  fprintf(stderr, "Time taken = %f msec\n",
-  comp_time(time_s, time_e) / 1000.0);
-}
+//   fprintf(stderr, "Time taken = %f msec\n",
+//   comp_time(time_s, time_e) / 1000.0);
+// }
 
 // int main( int argc, const char* argv[] )
 // {

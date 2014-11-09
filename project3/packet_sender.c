@@ -29,6 +29,7 @@ static packet_t get_packet() {
     if (how_many == 0) {
       how_many = 1;
     }
+    pkt_total = how_many;
     printf("Number of packets in current message: %d\n", how_many);
     which = -1;
     for (i = 0; i < MAX_PACKETS; ++i) {
@@ -62,6 +63,7 @@ static packet_t get_packet() {
 }
 
 static void packet_sender(int sig) {
+	printf("In packet sender, sig is: %d\n", sig);
   packet_t pkt;
 
   pkt = get_packet();
@@ -79,6 +81,7 @@ static void packet_sender(int sig) {
   {
     perror("Failed while doing msgsnd");
   }
+  //printf("Receiver pid is: %d\n", receiver_pid);
   // TODO send SIGIO to the receiver if message sending was successful.
   kill(receiver_pid, SIGIO);
 }
@@ -96,6 +99,7 @@ int main(int argc, char **argv) {
 
   int i;
 
+  sigset_t set;
   struct itimerval interval;
   struct sigaction act;           
 
@@ -104,6 +108,10 @@ int main(int argc, char **argv) {
   {
     perror("Failed while doing msgget");
   }
+  else
+  {
+  	printf("msgget succeeded, msqid is: %d\n", msqid);
+  }
   /*  TODO read the receiver pid from the queue and store it for future use*/
   if(msgrcv(msqid, &queuemsg, sizeof(int), PID_TYPE, 0) == -1)
   {
@@ -111,28 +119,38 @@ int main(int argc, char **argv) {
   }
   receiver_pid = queuemsg.pid;
 
+
   printf("Got pid : %d\n", receiver_pid);
  
+
+  act.sa_handler = packet_sender;
+  act.sa_flags = 0;
+  sigemptyset(&act.sa_mask);
+
+  if(sigaction(SIGALRM, &act, NULL) == -1)
+  {
+      fprintf(stderr, "Error: sigaction error.\nProgram will now exit.\n");
+      return EXIT_FAILURE;
+  }
   /* DONE!!
    *TODO - set up alarm handler -- mask all signals within it
    * The alarm handler will get the packet and send the packet to the receiver. Check packet_sender();
    * Don't care about the old mask, and SIGALRM will be blocked for us anyway,
    * but we want to make sure act is properly initialized.
   */
-  struct sigaction alarm;
-  alarm.sa_handler = packet_sender;
-  sigemptyset(&alarm.sa_mask);
-  alarm.sa_flags = 0;
+  // struct sigaction alarm;
+  // alarm.sa_handler = packet_sender;
+  // alarm.sa_flags = 0;
 
-  if(sigaction(SIGALRM, &alarm, NULL) == -1)
-  {
-    perror("Error, failed to set alarm to catch sig");
-  }
+  // if(sigaction(SIGALRM, &alarm, NULL) == -1)
+  // {
+  //   perror("Error, failed to set alarm to catch sig");
+  // }
 
-  /*  DONE!!!
-   * TODO - turn on alarm timer ...
-   * use  INTERVAL and INTERVAL_USEC for sec and usec values
-  */
+  //   DONE!!!
+  //  * TODO - turn on alarm timer ...
+  //  * use  INTERVAL and INTERVAL_USEC for sec and usec values
+  
   struct itimerval timer;
   timer.it_value.tv_sec = INTERVAL;
   timer.it_value.tv_usec = INTERVAL_USEC;
@@ -150,8 +168,12 @@ int main(int argc, char **argv) {
     printf("==========================\n", i);
     printf("Sending Message: %d\n", i);
     while (pkt_cnt < pkt_total) {
+    	//printf("Packet count is: %d\n", pkt_cnt);
+    	//printf("Packet count is: %d\n", pkt_total);
       pause(); /* block until next packet is sent. SIGALARM will unblock and call the handler.*/
     }
+    //printf("Reset packet total\n");
+    pkt_total = 1;
     pkt_cnt = 0;
   }
 
