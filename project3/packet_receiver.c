@@ -51,29 +51,25 @@ static char *assemble_message()
 {
   char *msg;
   int i;
-  int msg_len = message.num_packets * sizeof(data_t);
+  //int msg_len = message.num_packets * sizeof(data_t);
   /* TODO - Allocate msg and assemble packets into it */
-  //char *msg_ptr;
-  if((msg = (char *) mm_get(&mm)) == NULL)
+  char *msg_ptr;
+  if((msg = mm_get(&mm)) == NULL)
   {
     perror("Failed to allocate memory for msg");
     return NULL;
   }
 
-  if(message.num_packets != 0)
-  {
-    strcpy(msg, ((packet_t*)(message.data[0]))->data);
-  }
-  else
-  {
-    return NULL;
-  }
+  msg_ptr = msg;
 
   for(i = 0; i < pkt_total; i++)
   {
-    strcat(msg, ((packet_t *)(message.data[i]))->data);
+	memcpy(msg_ptr, ((packet_t *) message.data[i])->data, sizeof(data_t));
+	msg_ptr += sizeof(data_t);
+	mm_put(&mm, message.data[i]);
   }
-  /* reset these for next message */
+   *msg_ptr = '\0';
+
   pkt_total = 1;
   pkt_cnt = 0;
   message.num_packets = 0;

@@ -103,23 +103,23 @@ void mm_put(mm_t *mm, void *chunk)
   *status = FREE;
 }
 
-// void mm_release(mm_t *mm)
-// {
-//   if(mm == NULL)
-//   {
-//     perror("Failed. Can't free as pointer is NULL");
-//   }
-//   free(mm->data);
-// }
-
 void mm_release(mm_t *mm)
 {
   if(mm == NULL)
   {
     perror("Failed. Can't free as pointer is NULL");
   }
-  free(mm);
+  free(mm->data);
 }
+
+// void mm_release(mm_t *mm)
+// {
+//   if(mm == NULL)
+//   {
+//     perror("Failed. Can't free as pointer is NULL");
+//   }
+//   free(mm);
+// }
 
 /*
  * TODO - This is just an example of how to use the timer.  Notice that

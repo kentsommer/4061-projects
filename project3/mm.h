@@ -12,7 +12,6 @@
 
 static int cs; 
 
-
 /* TODO - Fill this in */
 typedef struct {
 	int index; // that is the first free chunk we can use
