@@ -1,3 +1,10 @@
+/*CSci4061 F2014 Assignment 3
+*section: 4
+*date: 11/10/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
 #ifndef PACKET_H
 #define PACKET_H
 
@@ -20,7 +27,7 @@
 #define MSGSIZE 128
 #define key 4061 /* key which will be used for identifying the queue */
 #define QUEUE_MSG_TYPE 1 /* message type for queue messages. Send receive only these types of messages from the queue */
-#define PID_TYPE 6
+#define PID_TYPE 6 //Type set as mtype 
 
 typedef char data_t[PACKET_SIZE];
 

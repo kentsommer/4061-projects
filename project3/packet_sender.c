@@ -1,3 +1,9 @@
+/*CSci4061 F2014 Assignment 3
+*section: 4
+*date: 11/10/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
 
 #include <time.h>
 #include "packet.h"
@@ -29,7 +35,10 @@ static packet_t get_packet() {
     if (how_many == 0) {
       how_many = 1;
     }
-    pkt_total = how_many;
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // This line was added to facilitate proper tracking of the number of packets to send //
+    pkt_total = how_many;                                                                 //
+    ////////////////////////////////////////////////////////////////////////////////////////
     printf("Number of packets in current message: %d\n", how_many);
     which = -1;
     for (i = 0; i < MAX_PACKETS; ++i) {
@@ -73,15 +82,15 @@ static void packet_sender(int sig) {
   printf ("Sending packet: %s\n", temp);
   pkt_cnt++;
 
-  // TODO Create a packet_queue_msg for the current packet.
+  // Creates a packet_queue_msg for the current packet
   packet_queue_msg message = {QUEUE_MSG_TYPE, pkt};
-  // TODO send this packet_queue_msg to the receiver. Handle any error appropriately.
+  // Sends packet_queue_msg to the receiver
   if(msgsnd(msqid, &message, sizeof(packet_queue_msg), 0) == -1)
   {
     perror("Failed while doing msgsnd");
+    exit(-1);
   }
-  //printf("Receiver pid is: %d\n", receiver_pid);
-  // TODO send SIGIO to the receiver if message sending was successful.
+  // Sends SIGIO to the receiver if message sending was successful
   kill(receiver_pid, SIGIO);
 }
 
@@ -98,53 +107,37 @@ int main(int argc, char **argv) {
 
   int i;
 
+  //Sigaction and interval setup
   sigset_t set;
   struct itimerval interval;
-  struct sigaction act;           
+  struct sigaction saction;           
 
-  /* TODO Create a message queue */ 
+  /* Creates a message queue */ 
   if((msqid = msgget(key, IPC_CREAT | 0666)) == -1)
   {
     perror("Failed while doing msgget");
+    exit(-1);
   }
-  else
-  {
-  	//printf("msgget succeeded, msqid is: %d\n", msqid);
-  }
-  /*  TODO read the receiver pid from the queue and store it for future use*/
+  /*  Reads the receiver pid from the queue and stores it for future use*/
   if(msgrcv(msqid, &queuemsg, sizeof(int), PID_TYPE, 0) == -1)
   {
     perror("Failed while going msgrcv");
+    exit(-1);
   }
   receiver_pid = queuemsg.pid;
 
-  act.sa_handler = packet_sender;
-  act.sa_flags = 0;
-  sigemptyset(&act.sa_mask);
+  //Setup sigaction handler, flags, and mask
+  saction.sa_handler = packet_sender;
+  saction.sa_flags = 0;
+  sigemptyset(&saction.sa_mask);
 
-  if(sigaction(SIGALRM, &act, NULL) == -1)
+  if(sigaction(SIGALRM, &saction, NULL) == -1)
   {
       perror("Failed: sigaction error.");
+      exit(-1);
   }
-  /* DONE!!
-   *TODO - set up alarm handler -- mask all signals within it
-   * The alarm handler will get the packet and send the packet to the receiver. Check packet_sender();
-   * Don't care about the old mask, and SIGALRM will be blocked for us anyway,
-   * but we want to make sure act is properly initialized.
-  */
-  // struct sigaction alarm;
-  // alarm.sa_handler = packet_sender;
-  // alarm.sa_flags = 0;
-
-  // if(sigaction(SIGALRM, &alarm, NULL) == -1)
-  // {
-  //   perror("Error, failed to set alarm to catch sig");
-  // }
-
-  //   DONE!!!
-  //  * TODO - turn on alarm timer ...
-  //  * use  INTERVAL and INTERVAL_USEC for sec and usec values
   
+  //Setup itimer
   struct itimerval timer;
   timer.it_value.tv_sec = INTERVAL;
   timer.it_value.tv_usec = INTERVAL_USEC;
@@ -153,8 +146,8 @@ int main(int argc, char **argv) {
   if(setitimer(ITIMER_REAL, &timer, NULL) == -1)
   {
     perror("Failed doing setitimer");
+    exit(-1);
   }
-  /* And the timer */ //IS there anything else needed?
 
   /* NOTE: the below code wont run now as you have not set the SIGALARM handler. Hence, 
      set up the SIGALARM handler and the timer first. */

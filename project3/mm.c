@@ -1,3 +1,10 @@
+/*CSci4061 F2014 Assignment 3
+*section: 4
+*date: 11/10/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,24 +30,23 @@ int mm_init(mm_t *mm, int hm, int sz)
 {
   int i, *status;
   cs = sz;
-
-  if((mm->data = malloc((hm + 1) * sizeof(int))) == NULL)
+  if((mm->data = malloc((hm + 1) * sizeof(int))) == NULL) // Allocate space 
   {
-    perror("Failed on malloc in init");
+    perror("Failed to malloc");
     return -1;
   }
-  if((mm->status = malloc((hm + 1) * sizeof(int))) == NULL)
+  if((mm->status = malloc((hm + 1) * sizeof(int))) == NULL) // Allocate status
   {
-    perror("Failed on malloc in init");
+    perror("Failed to malloc");
     return -1;
   }
   status = mm->status;
-  for(i = 0; i < hm; i++)
+  for(i = 0; i < hm; i++) // Set up the status for each block to FREE
   {
     *status = FREE;
     status++;
   }
-  *status = END;
+  *status = END; // Set last position to END status
   mm->position = 0;
   return 0;
 }
@@ -50,13 +56,8 @@ void *mm_get(mm_t *mm)
   void *chunk;
   int position, *status;
   status = mm->status + mm->position;
-  switch(*status)
+  switch(*status) // Switch through status
   {
-    case FREE:
-      chunk = mm->data + (mm->position * cs);
-      *status = TAKEN;
-      mm->position++;
-      break;
     case TAKEN:
       position = 1;
       status = mm->status;
@@ -76,10 +77,15 @@ void *mm_get(mm_t *mm)
         mm->position = position;
       }
       break;
+    case FREE:
+      chunk = mm->data + (mm->position * cs);
+      *status = TAKEN;
+      mm->position++;
+      break;
     case END:
       return NULL;
     default:
-      perror("Failed trying to match status");
+      perror("Failed. Invalid status");
   }
   return chunk;
 }
@@ -93,7 +99,7 @@ void mm_put(mm_t *mm, void *chunk)
   }
   else
   {
-    perror("error, invalid chunky size");
+    perror("Failed. invalid chunk size");
   }
   if(index < mm->position)
   {
@@ -111,44 +117,3 @@ void mm_release(mm_t *mm)
   }
   free(mm->data);
 }
-
-// void mm_release(mm_t *mm)
-// {
-//   if(mm == NULL)
-//   {
-//     perror("Failed. Can't free as pointer is NULL");
-//   }
-//   free(mm);
-// }
-
-/*
- * TODO - This is just an example of how to use the timer.  Notice that
- * this function is not included in mm_public.h, and it is defined as static,
- * so you cannot call it from other files.  Instead, just follow this model
- * and implement your own timing code where you need it.
- */
-// static void timer_example() {
-//   struct timeval time_s, time_e;
-//   /* start timer */
-//   gettimeofday (&time_s, NULL);
-//   mm_t *mm = NULL;
-//   mm_init(&mm,1000000,64);
-//   int i;
-//   for(i=0;i<1000000;i++)
-//   {
-//         mm_put(&mm,&mm);
-//         mm_get(&mm);
-//   }
-
-//   /* TODO - code you wish to time goes here */
-//   gettimeofday(&time_e, NULL);
-
-//   fprintf(stderr, "Time taken = %f msec\n",
-//   comp_time(time_s, time_e) / 1000.0);
-// }
-
-// int main( int argc, const char* argv[] )
-// {
-//   timer_example();
-//   return 0;
-// }

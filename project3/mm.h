@@ -1,3 +1,10 @@
+/*CSci4061 F2014 Assignment 3
+*section: 4
+*date: 11/10/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
 #ifndef __MM_H
 #define __MM_H
 
@@ -14,10 +21,7 @@ static int cs;
 
 /* TODO - Fill this in */
 typedef struct {
-	int index; // that is the first free chunk we can use
 	void* data;
-	int sizeOfChunk;
-	int numberOfChunks;
     int *status; //FREE = 0, TAKEN = 1, END = 2;
     int position; 
 } mm_t;
