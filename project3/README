@@ -1,0 +1,16 @@
+1. How to compile your program
+  a) To compile the whole project, simply run: make
+  b) To compile and run the tests, simply run: make test
+  c) To clean up compiled files when done run: make clean
+2. How to use the program from the shell (syntax)
+  To run the packet receiver and sender:
+    a) In one shell (in the project directory) (x is the number of messages you want) run: ./packet_sender x 
+    b) In one shell (in the project directory) (x is the number of messages you want) run: ./packet_receiver x 
+3. What exactly your program does (briefly)
+  a) packet_sender.c
+    i) Creates a message, opens a message queue and places the message in the queue in split up parts as packets
+  b) packet_receiver.c
+    i) Receives the packets from the packet_sender (from the queue) then assembles them to create the message
+  c) mm.c
+    i) Functions: Allocate memory for a mm_t var, get a chunk of memory, return a chunk of memory back, free allocated memory
+  
