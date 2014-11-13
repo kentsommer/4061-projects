@@ -14,9 +14,9 @@
   
 3. What exactly your program does (briefly)
   a) packet_sender.c
-    i) Creates a message, opens a message queue and places the message in the queue in split up parts as packets
+    i) Creates a message, opens a message queue and places the message in the queue in split up packets
   b) packet_receiver.c
-    i) Receives the packets from the packet_sender (from the queue) then assembles them to create the message
+    i) Receives the packets from packet_sender (the queue) then assembles them to create the message
   c) mm.c
     i) Functions: Allocate memory for a mm_t var, get a chunk of memory
         return a chunk of memory back, free allocated memory
