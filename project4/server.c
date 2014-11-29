@@ -163,7 +163,6 @@ void * dispatch(void * arg)
 		if(request.m_socket < 0)
 		{
 			strcpy(request.m_szRequest, "end");
-
 			uLock(&accessRequest);
 			//Either take a spot or wait until a spot is available
 			uSemWait(&done);
@@ -173,9 +172,7 @@ void * dispatch(void * arg)
 			uUnlock(&accessRequest2);
 			uSemPost(&accessible);
 			uUnlock(&accessRequest);
-
 			pthread_exit(NULL);
-
 		}
 
 		//Get a request and increment number of requests taken
@@ -199,7 +196,6 @@ void * dispatch(void * arg)
 			printf("Not a valid request.\n");
 		}
 	}
-
 	return NULL;
 }
 
@@ -217,7 +213,6 @@ void * worker(void * arg)
 	int numberReqDone=0;
 	while(1)
 	{
-
 		request_queue_t current;
 		uLock(&waitLock);
 		uSemWait(&accessible);
