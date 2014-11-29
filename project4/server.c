@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "util.h"
+#include <errno.h>
+#include <pthread.h>
 #include <semaphore.h>
 
 #define MAX_THREADS 100
@@ -40,7 +42,7 @@ typedef struct worker
 {
 	int numwoker;
 	char  path[MAX_REQUEST_LENGTH];
-} worker ;
+} worker_t;
 
 request_queue_t latestRequest;
 int sizeofqueue = 0;
@@ -201,8 +203,8 @@ void * dispatch(void * arg)
 
 void * worker(void * arg)
 {
-	worker * workerStruct;
-	workerStruct =  (worker*) arg;
+	worker_t * workerStruct;
+	workerStruct =  (worker_t*) arg;
 	int numwoker = workerStruct->numwoker;
 	if(workerStruct == NULL)
 	{
@@ -230,7 +232,7 @@ void * worker(void * arg)
 		}
 		else
 		{
-			pop(glblQueue);
+			uPop(glblQueue);
 		}
 		uUnlock(&accessRequest2);
 
@@ -404,7 +406,7 @@ int main(int argc, char **argv)
 
 	for(i = 0; i < atoi(argv[4]); i++)
 	{
-		worker workerStruct;
+		worker_t workerStruct;
 		workerStruct.numwoker = i;
 		strcpy(workerStruct.path, argv[2]);
 		int err = pthread_create(&(worker_thread[i]), NULL, worker, &workerStruct);
