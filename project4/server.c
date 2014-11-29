@@ -201,7 +201,7 @@ void * dispatch(void * arg)
 
 void * worker(void * arg)
 {
-		worker * workerStruct;
+	worker * workerStruct;
 	workerStruct =  (worker*) arg;
 	int numwoker = workerStruct->numwoker;
 	if(workerStruct == NULL)
@@ -284,38 +284,32 @@ void * worker(void * arg)
 		}
 		char error[25];
 		int errnum = 0;
-		char *d = uMalloc(size+1);
+		char *mData = uMalloc(size+1);
 		int numread;
 		numberReqDone++;
 
 		//Read file
 		if(data) 
 		{
-			if((numread = fread(d, 1, size, data)) >= 0)
+			if((numread = fread(mData, 1, size, data)) >= 0)
 			{	
 				fclose(data);
-				return_result(current.m_socket, type,  d, numread);
-
+				return_result(current.m_socket, type,  mData, numread);
 			}				
 			else
 			{
 				strcpy(error, "failed to read file");
 				errnum = 1;
-
 				return_error(current.m_socket, error);
-
 			}
 		}
 		else
 		{
 			strcpy(error, "failed to open file");
 			errnum = 1;
-
 			return_error(current.m_socket, error);
-
 		}
-
-		free(d);
+		free(mData);
 
 
 		//Setup and output to log
@@ -461,6 +455,5 @@ int main(int argc, char **argv)
 	{
 		perror("Failed to close: filelog");
 	}
-
 	return 0;
 }
