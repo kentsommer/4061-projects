@@ -1,9 +1,10 @@
-/* csci4061 F2013 Assignment 4 
-* section: one_digit_number 
-* date: mm/dd/yy 
-* names: Name of each member of the team (for partners)
-* UMN Internet ID, Student ID (xxxxxxxx, 4444444), (for partners)
+/*CSci4061 F2014 Assignment 4
+*section: 4
+*date: 12/2/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
 */
+
 
 #include <stdio.h>
 #include <pthread.h>
