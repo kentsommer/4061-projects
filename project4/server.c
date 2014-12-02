@@ -5,7 +5,6 @@
 *id: somme282, kgupta, chen2806
 */
 
-
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -23,13 +22,13 @@
 #define MAX_REQUEST_LENGTH 64
 
 /*SETUP THE LOCKS*/
+pthread_mutex_t getRequest = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t accessRequest = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t accessRequest2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t accessOutput = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t waitLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mallocLOCK = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t getRequest = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t acceptConnection = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mallocLOCK = PTHREAD_MUTEX_INITIALIZER;
 
 //Structure for Queue.
 typedef struct request_queue
@@ -41,11 +40,10 @@ typedef struct request_queue
 //Structure for Worker
 typedef struct worker
 {
-	int numwoker;
+	int numworkers;
 	char  path[MAX_REQUEST_LENGTH];
 } worker_t;
 
-request_queue_t latestRequest;
 int sizeofqueue = 0;
 int maxqueue = 0;
 int writen =0;
@@ -55,15 +53,6 @@ request_queue_t glblQueue[MAX_QUEUE_SIZE];
 FILE *filelog;
 sem_t accessible;
 sem_t done;
-
-//Destroy a given lock
-void uLockDestroy(pthread_mutex_t *mutex)
-{
-	if(pthread_mutex_destroy(mutex))
-	{
-		perror("Error destroying lock");
-	}
-}
 
 //Lock a given lock
 void uLock(pthread_mutex_t *mutex)
@@ -80,6 +69,15 @@ void uUnlock(pthread_mutex_t *mutex)
 	if(pthread_mutex_unlock(mutex))
 	{
 		perror("Error unlocking");
+	}
+}
+
+//Destroy a given lock
+void uLockDestroy(pthread_mutex_t *mutex)
+{
+	if(pthread_mutex_destroy(mutex))
+	{
+		perror("Error destroying lock");
 	}
 }
 
@@ -167,10 +165,8 @@ void * dispatch(void * arg)
 		{
 			strcpy(request.m_szRequest, "end");
 			uLock(&accessRequest);
-			//Either take a spot or wait until a spot is available
-			uSemWait(&done);
-			//Ensure that memcpy happens in a separate memcpy
-			uLock(&accessRequest2);
+			uSemWait(&done);//Take a spot or wait until one is available
+			uLock(&accessRequest2);//Ensure that memcpy happens in a separate memcpy
 			uPush(glblQueue,request);
 			uUnlock(&accessRequest2);
 			uSemPost(&accessible);
@@ -178,17 +174,16 @@ void * dispatch(void * arg)
 			pthread_exit(NULL);
 		}
 
-		//Get a request and increment number of requests taken
+		//Lock for get_request
 		uLock(&getRequest);
 		int req = get_request(request.m_socket , request.m_szRequest);
 		uUnlock(&getRequest);
 
 		if(req == 0)
 		{
-			uLock(&accessRequest);
-			//need condition variable to ensure that worker has copied request.
-			uSemWait(&done);//establish taht a spot has been taken
-			uLock(&accessRequest2);//used to make absolutely sure that memcpy happens in separate memcpy
+			uLock(&accessRequest);//Lock until worker has copied request.
+			uSemWait(&done);//Set a spot as taken
+			uLock(&accessRequest2);//Lock for memcopy
 			uPush(glblQueue,request);
 			uUnlock(&accessRequest2);
 			uSemPost(&accessible);
@@ -206,7 +201,7 @@ void * worker(void * arg)
 {
 	worker_t * workerStruct;
 	workerStruct =  (worker_t*) arg;
-	int numwoker = workerStruct->numwoker;
+	int numworkers = workerStruct->numworkers;
 	if(workerStruct == NULL)
 	{
 		perror("Failed: worker is NULL");
@@ -237,11 +232,11 @@ void * worker(void * arg)
 		}
 		uUnlock(&accessRequest2);
 
-		//Establishes that a spot on the queue is empty
+		//Set spot on queue as empty
 		uSemPost(&done);	
 		uUnlock(&waitLock);
 
-		//Obtain the file type of request
+		//Get request filetype
 		char type[12];
 		if(strstr(current.m_szRequest , ".html") || strstr(current.m_szRequest , "htm"))
 		{
@@ -319,21 +314,21 @@ void * worker(void * arg)
 		uLock(&accessOutput);
 		if(errnum==1)
 		{
-			if (fprintf(filelog, "[%d][%d][%d][%s][%s]\n", numwoker, numberReqDone, current.m_socket, current.m_szRequest, error) <= 0)
+			if (fprintf(filelog, "[%d][%d][%d][%s][%s]\n", numworkers, numberReqDone, current.m_socket, current.m_szRequest, error) <= 0)
 			{
-				printf("fileproblem");
+				printf("ERROR: THERE IS A PROBLEM WITH THE LOGFILE");
 			}
 		}
 		else
 		{
-			if (fprintf(filelog, "[%d][%d][%d][%s][%d]\n", numwoker, numberReqDone, current.m_socket, current.m_szRequest, numread) <= 0) 
+			if (fprintf(filelog, "[%d][%d][%d][%s][%d]\n", numworkers, numberReqDone, current.m_socket, current.m_szRequest, numread) <= 0) 
 			{
-				printf("fileproblem");	
+				printf("ERROR: THERE IS A PROBLEM WITH THE LOGFILE");	
 			}		
 		}
 		if(fflush(filelog))
 		{
-			perror("File closed unexpectedly");
+			perror("ERROR: LOGFILE CLOSED UNEXPECTEDLY");
 		}
 		uUnlock(&accessOutput);
 	}
@@ -342,7 +337,11 @@ void * worker(void * arg)
 
 int main(int argc, char **argv)
 {
-	//Error check first.
+
+	///////////////////////////////////////////////////
+	//////            ERROR CHECKING             //////
+	///////////////////////////////////////////////////
+
 	if(argc != 6 && argc != 7)
 	{
 		printf("usage: %s port path num_dispatcher num_workers queue_length [cache_size]\n", argv[0]);
@@ -356,36 +355,40 @@ int main(int argc, char **argv)
 	}
 	if(argv[2]==NULL)
 	{
-		printf("ERROR: INVALID PATH");
+		printf("ERROR: PATH IS INVALID");
 		return -1;
 	}
 	if(atoi(argv[3])>MAX_THREADS)
 	{
-		printf("ERROR: MAXIMUM NUMBER OF DISPATCHER THREADS EXCEDED, %s IS AN INVALID ENTRY\n", argv[3]);
+		printf("ERROR: MAXIMUM NUMBER OF DISPATCHER THREADS EXCEDED, %s IS INVALID\n", argv[3]);
 		return -1;
 	}
 	if(atoi(argv[4])>MAX_THREADS)
 	{
-		printf("ERROR: MAXIMUM NUMBER OF WORKER THREADS EXCEDED, %s IS AN INVALID ENTRY\n", argv[4]);
+		printf("ERROR: MAXIMUM NUMBER OF WORKER THREADS EXCEDED, %s IS INVALID\n", argv[4]);
 		return -1;
 	}
 
 	if(atoi(argv[5])>MAX_QUEUE_SIZE)
 	{
-		printf("ERROR: MAXIMUM QUEUE SIZE EXCEEDED, %s IS AN INVALID ENTRY\n", argv[5]);
+		printf("ERROR: MAXIMUM QUEUE SIZE EXCEEDED, %s IS INVALID\n", argv[5]);
 		return -1;
 	}
 
+	///////////////////////////////////////////////////
+	//////             INITIALIZATION            //////
+	///////////////////////////////////////////////////
+
 	init(atoi(argv[1]));
 	maxqueue = atoi(argv[5]);
-	//Init Semaphores 
+	//Setup the semaphores 
 	sem_init(&accessible,0,0);
 	sem_init(&done,0,maxqueue);
 
 	filelog = fopen("web_server_log", "workerStruct");
 	if(filelog==NULL)
 	{
-		printf("ERROR: ERROR OPENING FILE\n");
+		printf("ERROR: COULD NOT OPEN LOG FILE\n");
 	}
 
 	//Setup the threads
@@ -408,7 +411,7 @@ int main(int argc, char **argv)
 	for(i = 0; i < atoi(argv[4]); i++)
 	{
 		worker_t workerStruct;
-		workerStruct.numwoker = i;
+		workerStruct.numworkers = i;
 		strcpy(workerStruct.path, argv[2]);
 		int err = pthread_create(&(worker_thread[i]), NULL, worker, &workerStruct);
 		if(err != 0)
@@ -426,16 +429,20 @@ int main(int argc, char **argv)
 	{
 		if(pthread_join(worker_thread[i], NULL))
 		{
-			perror("Error joning thread: worker_thread");
+			perror("ERROR: COULD NOT JOIN THREAD \"worker_thread\"");
 		}
 	}
 	for(i = 0; i < atoi(argv[3]); i++)
 	{
 		if(pthread_join(dispatch_thread[i], NULL))
 		{
-			perror("Error joining thread: dispatch_thread");
+			perror("ERROR: COULD NOT JOIN THREAD \"dispatch_thread\"");
 		}
 	}
+
+	///////////////////////////////////////////////////
+	////// FINAL CLEANUP OF LOCKS AND SEMAPHORES //////
+	///////////////////////////////////////////////////
 
 	//Destroy locks
 	uLockDestroy(&accessRequest);
@@ -445,18 +452,21 @@ int main(int argc, char **argv)
 	uLockDestroy(&mallocLOCK);
 	uLockDestroy(&getRequest);
 	//Destroy semaphores
-	if(sem_destroy(&accessible))
-	{
-		perror("Failed to destroy semaphore: accessible");
-	}
 	if(sem_destroy(&done))
 	{
-		perror("Failed to destroy semaphore: done");
+		perror("ERROR: COULD NOT DESTROY SEMAPHORE \"DONE\"");
 	}
-
+	if(sem_destroy(&accessible))
+	{
+		perror("ERROR: COULD NOT DESTROY SEMAPHORE \"ACCCESSIBLE\"");
+	}
 	if(fclose(filelog))
 	{
-		perror("Failed to close: filelog");
+		perror("ERROR: COULD NOT CLOSE LOGFILE");
 	}
+
+	///////////////////////////////////////////////////
+	//////             ALL DONE, EXIT!           //////
+	///////////////////////////////////////////////////
 	return 0;
 }
