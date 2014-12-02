@@ -1,0 +1,41 @@
+/*CSci4061 F2014 Assignment 4
+*section: 4
+*date: 12/2/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
+
+//////////////////////////////////
+////  Purpose of the program  ////
+//////////////////////////////////
+
+This program servers as a multithreaded web-server using POSIX threads.
+
+
+//////////////////////////////////
+////      How to Compile      ////
+//////////////////////////////////
+
+Navigate to the project directory and run: make
+To clean up the project simply run: make clean
+
+//////////////////////////////////
+/// How to Use from the Shell ////
+//////////////////////////////////
+
+Navigate to the project directory and run: ./web_server_http port path num_dispatch num_workers qlen
+
+In a seperate terminal run the command: wget -i <path-to-urls>/urls -O myres
+
+Requests will be logged to the web_server_log file
+
+//////////////////////////////////
+////  What this Program Does  ////
+//////////////////////////////////
+
+This program starts with main() which creates the required worker and dispatcher threads.
+
+The dispatch function accepts incoming connections, reads the request, and then places the request into the queue. 
+
+The worker function watches the queue and retrieves requests from it as they are placed into the queue.
