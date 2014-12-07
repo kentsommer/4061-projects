@@ -248,7 +248,13 @@ int get_request(int fd, char *filename)
 ************************************************/
 int return_result(int fd, char *content_type, char *buf, int numbytes)
 {
-
+    FILE* resultf=fdopen(fd,"a");
+    if(resultf==NULL)
+    {
+        perror("failed open result:");
+        return -1;
+    }
+    fprintf(resultf,"HTTP/1.1 200 OK/nContent-Type:%s/nContent-Length:%d/nConnection: Close/n/n",content_type,numbytes);
 }
 
 
