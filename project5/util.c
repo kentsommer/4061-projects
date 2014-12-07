@@ -248,6 +248,7 @@ int get_request(int fd, char *filename)
 ************************************************/
 int return_result(int fd, char *content_type, char *buf, int numbytes)
 {
+    pthread_mutex_lock(&accept_con_mutex);
     FILE* resultf=fdopen(fd,"a");
     if(resultf==NULL)
     {
@@ -255,9 +256,19 @@ int return_result(int fd, char *content_type, char *buf, int numbytes)
         return -1;
     }
     fprintf(resultf,"HTTP/1.1 200 OK/nContent-Type:%s/nContent-Length:%d/nConnection: Close/n/n",content_type,numbytes);
+    if(fwrite(buf,1,numbytes,resultf)!=numbytes))
+    {
+        perror("wrong number of bytes");
+        return -1;
+    }
+    if(fclose(resultf)!=0)
+    {
+        perror("Failed to close file");
+        return -1;
+    }
+    pthread_mutex_unlock(&accept_con_mutex);
+    return 0;
 }
-
-
 /**********************************************
  * return_error
    - returns an error message in response to a bad request
