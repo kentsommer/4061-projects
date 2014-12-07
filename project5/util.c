@@ -174,7 +174,7 @@ int accept_connection(void)
     printf("Entered 'accept_connection' \n");
     struct sockaddr_in  address;
     int  length;
-    int conn = accept(sock, (struct sockaddr *) (&address), &length);
+    int conn = accept(socket_n, (struct sockaddr *) (&address), &length);
 
     if (conn == -1)
     {
