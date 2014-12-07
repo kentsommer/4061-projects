@@ -166,8 +166,16 @@ void init(int port)
 ***********************************************/
 int accept_connection(void) {
 
-   printf("Entered 'accept_connection' \n");
+  int length;
+  struct socketaddr_in addr;
+  int conn = accept(sock, (struct sockaddr*) (&addr), &length);
 
+  if(conn == -1)
+  {
+    perror("Failed to accept socket: ");
+  }
+
+  return conn;
 }
 
 /**********************************************
@@ -186,7 +194,26 @@ int accept_connection(void) {
      specific 'connection'.
 ************************************************/
 int get_request(int fd, char *filename) {
- printf("entered get_request \n");
+ size_t num;
+ char* buffer = NULL;
+ file = fdopen(fd, "r");
+ if (file == NULL)
+ {
+  perror("Failed to open file: ");
+  return -1;
+ }
+ getline(&buffer, &num, file);
+ if(fflush(file) != 0)
+ {
+  perror("Failed file flush: ");
+ }
+ pthread_mutex_lock(&accept_con_mutex); 
+ strtok(buffer, " ");
+ filename = strcpy(filename, strtok(NULL, " ")); 
+ pthread_mutex_unlock(&accept_con_mutex);
+ free(buffer);
+
+ return 0;
 }
 
 /**********************************************
