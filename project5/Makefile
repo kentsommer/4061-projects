@@ -9,6 +9,9 @@ web_server: server.o util.o
 
 server.o: server.c
 
+util.o:
+	${CC} ${LDFLAGS} -c util.c util.h
+
 clean:
 	rm *.o web_server
 

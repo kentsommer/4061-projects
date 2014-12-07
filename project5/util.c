@@ -203,7 +203,7 @@ int get_request(int fd, char *filename)
     printf("entered get_request \n");
     size_t num;
     char *buffer = NULL;
-    FILE* file; 
+    FILE *file;
     file = fdopen(fd, "r");
 
     if (file == NULL)
@@ -249,19 +249,19 @@ int get_request(int fd, char *filename)
 int return_result(int fd, char *content_type, char *buf, int numbytes)
 {
     pthread_mutex_lock(&accept_con_mutex);
-    FILE* resultf=fdopen(fd,"a");
-    if(resultf==NULL)
+    FILE *resultf = fdopen(fd, "a");
+    if (resultf == NULL)
     {
         perror("failed open result:");
         return -1;
     }
-    fprintf(resultf,"HTTP/1.1 200 OK/nContent-Type:%s/nContent-Length:%d/nConnection: Close/n/n",content_type,numbytes);
-    if(fwrite(buf,1,numbytes,resultf)!=numbytes))
+    fprintf(resultf, "HTTP/1.1 200 OK/nContent-Type:%s/nContent-Length:%d/nConnection: Close/n/n", content_type, numbytes);
+    if (fwrite(buf, 1, numbytes, resultf) != numbytes))
     {
         perror("wrong number of bytes");
         return -1;
     }
-    if(fclose(resultf)!=0)
+    if (fclose(resultf) != 0)
     {
         perror("Failed to close file");
         return -1;
