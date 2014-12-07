@@ -18,96 +18,101 @@
 
 static int master_fd = -1;
 pthread_mutex_t accept_con_mutex = PTHREAD_MUTEX_INITIALIZER;
-int socket_n; 
+int socket_n;
 
 // this function takes a hostname and returns the IP address
 int lookup_host (const char *host)
 {
-  struct addrinfo hints, *res;
-  int errcode;
-  char addrstr[100];
-  void *ptr;
+    struct addrinfo hints, *res;
+    int errcode;
+    char addrstr[100];
+    void *ptr;
 
-  memset (&hints, 0, sizeof (hints));
-  hints.ai_family = PF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags |= AI_CANONNAME;
+    memset (&hints, 0, sizeof (hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags |= AI_CANONNAME;
 
-  errcode = getaddrinfo (host, NULL, &hints, &res);
-  if (errcode != 0)
+    errcode = getaddrinfo (host, NULL, &hints, &res);
+    if (errcode != 0)
     {
-      perror ("getaddrinfo");
-      return -1;
+        perror ("getaddrinfo");
+        return -1;
     }
 
-  printf ("Host: %s\n", host);
-  while (res)
+    printf ("Host: %s\n", host);
+    while (res)
     {
-      inet_ntop (res->ai_family, res->ai_addr->sa_data, addrstr, 100);
+        inet_ntop (res->ai_family, res->ai_addr->sa_data, addrstr, 100);
 
-      switch (res->ai_family)
+        switch (res->ai_family)
         {
         case AF_INET:
-          ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
-          break;
+            ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
+            break;
         case AF_INET6:
-          ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-          break;
+            ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+            break;
         }
-      inet_ntop (res->ai_family, ptr, addrstr, 100);
-      printf ("IPv%d address: %s (%s)\n", res->ai_family == PF_INET6 ? 6 : 4,
-              addrstr, res->ai_canonname);
-      res = res->ai_next;
+        inet_ntop (res->ai_family, ptr, addrstr, 100);
+        printf ("IPv%d address: %s (%s)\n", res->ai_family == PF_INET6 ? 6 : 4,
+                addrstr, res->ai_canonname);
+        res = res->ai_next;
     }
 
-  return 0;
+    return 0;
 }
 
-int makeargv(const char *s, const char *delimiters, char ***argvp) {
-   int error;
-   int i;
-   int numtokens;
-   const char *snew;
-   char *t;
+int makeargv(const char *s, const char *delimiters, char ***argvp)
+{
+    int error;
+    int i;
+    int numtokens;
+    const char *snew;
+    char *t;
 
-   if ((s == NULL) || (delimiters == NULL) || (argvp == NULL)) {
-      errno = EINVAL;
-      return -1;
-   }
-   *argvp = NULL;
-   snew = s + strspn(s, delimiters);
-   if ((t = malloc(strlen(snew) + 1)) == NULL)
-      return -1;
-   strcpy(t,snew);
-   numtokens = 0;
-   if (strtok(t, delimiters) != NULL)
-      for (numtokens = 1; strtok(NULL, delimiters) != NULL; numtokens++) ;
+    if ((s == NULL) || (delimiters == NULL) || (argvp == NULL))
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    *argvp = NULL;
+    snew = s + strspn(s, delimiters);
+    if ((t = malloc(strlen(snew) + 1)) == NULL)
+        return -1;
+    strcpy(t, snew);
+    numtokens = 0;
+    if (strtok(t, delimiters) != NULL)
+        for (numtokens = 1; strtok(NULL, delimiters) != NULL; numtokens++) ;
 
-   if ((*argvp = malloc((numtokens + 1)*sizeof(char *))) == NULL) {
-      error = errno;
-      free(t);
-      errno = error;
-      return -1;
-   }
+    if ((*argvp = malloc((numtokens + 1) * sizeof(char *))) == NULL)
+    {
+        error = errno;
+        free(t);
+        errno = error;
+        return -1;
+    }
 
-   if (numtokens == 0)
-      free(t);
-   else {
-      strcpy(t,snew);
-      **argvp = strtok(t,delimiters);
-      for (i=1; i<numtokens; i++)
-         *((*argvp) +i) = strtok(NULL,delimiters);
-   }
-   *((*argvp) + numtokens) = NULL;
-   return numtokens;
+    if (numtokens == 0)
+        free(t);
+    else
+    {
+        strcpy(t, snew);
+        **argvp = strtok(t, delimiters);
+        for (i = 1; i < numtokens; i++)
+            *((*argvp) + i) = strtok(NULL, delimiters);
+    }
+    *((*argvp) + numtokens) = NULL;
+    return numtokens;
 }
 
-void freemakeargv(char **argv) {
-   if (argv == NULL)
-      return;
-   if (*argv != NULL)
-      free(*argv);
-   free(argv);
+void freemakeargv(char **argv)
+{
+    if (argv == NULL)
+        return;
+    if (*argv != NULL)
+        free(*argv);
+    free(argv);
 }
 
 /**********************************************
@@ -121,39 +126,39 @@ void freemakeargv(char **argv) {
    - if init encounters any errors, it will call exit().
 ************************************************/
 enum boolean {FALSE, TRUE};
-void init(int port) 
+void init(int port)
 {
-  int error;
-  int true = 1;
+    int error;
+    int true = 1;
 
-  if((socket_n = (socket(PF_INET, SOCK_STREAM,0))) == -1)
-  {
-    perror("ERROR: Failed to create socket!");
-    exit(-1);
-    return;
-  }
+    if ((socket_n = (socket(PF_INET, SOCK_STREAM, 0))) == -1)
+    {
+        perror("ERROR: Failed to create socket!");
+        exit(-1);
+        return;
+    }
 
-  struct sockaddr_in server;
-  server.sin_family = AF_INET;
-  server.sin_port = htons((short) port);
-  server.sin_addr.s_addr = htonl(INADDR_ANY);
+    struct sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_port = htons((short) port);
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if(setsockopt(socket_n, SOL_SOCKET, SO_REUSEADDR, (char *)&true, sizeof(int)) == -1)
-  {
-    perror("ERROR: Failed to set socket!");
-    return;
-  }
+    if (setsockopt(socket_n, SOL_SOCKET, SO_REUSEADDR, (char *)&true, sizeof(int)) == -1)
+    {
+        perror("ERROR: Failed to set socket!");
+        return;
+    }
 
-  if (bind(socket_n, (struct sockaddr *) &server, sizeof(server)) == -1)
-  {
-    error = errno;
-    while((close(socket_n) == -1) && (errno == EINTR));
-    errno = error;
-    perror("ERROR: Failed to bind socket to the port");
-    exit(-1);
-    return;
-  }
-  listen(socket_n, MAXLOGSIZE);
+    if (bind(socket_n, (struct sockaddr *) &server, sizeof(server)) == -1)
+    {
+        error = errno;
+        while ((close(socket_n) == -1) && (errno == EINTR));
+        errno = error;
+        perror("ERROR: Failed to bind socket to the port");
+        exit(-1);
+        return;
+    }
+    listen(socket_n, MAXLOGSIZE);
 }
 
 /**********************************************
@@ -164,19 +169,18 @@ void init(int port)
    - if the return value is negative, the thread calling
      accept_connection must exit by calling pthread_exit().
 ***********************************************/
-int accept_connection(void) 
+int accept_connection(void)
 {
-  printf("Entered 'accept_connection' \n");
-  struct sockaddr_in  address;
-  int  length;
-  int conn = accept(sock,(struct sockaddr *) (&address), &length);
+    printf("Entered 'accept_connection' \n");
+    struct sockaddr_in  address;
+    int  length;
+    int conn = accept(sock, (struct sockaddr *) (&address), &length);
 
-  if(conn == -1)
-  {
-    perror("ERROR: Failed to accept connection: ");
-  }
-  
-  return conn;
+    if (conn == -1)
+    {
+        perror("ERROR: Failed to accept connection: ");
+    }
+    return conn;
 }
 
 /**********************************************
@@ -194,9 +198,33 @@ int accept_connection(void)
      must NOT use a return_request or return_error function for that
      specific 'connection'.
 ************************************************/
-int get_request(int fd, char *filename) 
+int get_request(int fd, char *filename)
 {
- printf("entered get_request \n");
+    printf("entered get_request \n");
+    size_t num;
+    char *buffer = NULL;
+    FILE* file; 
+    file = fdopen(fd, "r");
+
+    if (file == NULL)
+    {
+        perror("Failed to open file: ");
+        return -1;
+    }
+
+    getline(&buffer, &num, file);
+    if (fflush(file) != 0)
+    {
+        perror("Failed file flush: ");
+    }
+
+    pthread_mutex_lock(&accept_con_mutex);
+    strtok(buffer, " ");
+    filename = strcpy(filename, strtok(NULL, " "));
+    pthread_mutex_unlock(&accept_con_mutex);
+
+    free(buffer);
+    return 0;
 }
 
 /**********************************************
@@ -218,7 +246,7 @@ int get_request(int fd, char *filename)
       - numbytes is the number of bytes the file takes up in buf
    - returns 0 on success, nonzero on failure.
 ************************************************/
-int return_result(int fd, char *content_type, char *buf, int numbytes) 
+int return_result(int fd, char *content_type, char *buf, int numbytes)
 {
 
 }
@@ -233,25 +261,25 @@ int return_result(int fd, char *content_type, char *buf, int numbytes)
       - buf is a pointer to the location of the error text
    - returns 0 on success, nonzero on failure.
 ************************************************/
-int return_error(int fd, char *buf) 
+int return_error(int fd, char *buf)
 {
-  pthread_mutex_lock(&accept_con_mutex);  
+    pthread_mutex_lock(&accept_con_mutex);
 
-  FILE *errorLogFile = fdopen(fd, "a");
-  if(errorLogFile == NULL)
-  {
-    perror("ERROR: Bad file descriptor in return_result: "); // Will eventually have something in return_result with the fd so this check will work
-    return -1;
-  }
+    FILE *errorLogFile = fdopen(fd, "a");
+    if (errorLogFile == NULL)
+    {
+        perror("ERROR: Bad file descriptor in return_result: "); // Will eventually have something in return_result with the fd so this check will work
+        return -1;
+    }
 
-  fprintf(errorLogFile, "HTTP/1.1 404 Not Found\nContent-Type: text/html\nContent-Length: %s\nConnection: Close\n\n%s", "read error" ,buf);//sizeof(buffer));
-  if(fclose(errorLogFile)!=0)
-  {
-    perror("ERROR: fclose failed to close result file");  
-    return -1;
-  }
+    fprintf(errorLogFile, "HTTP/1.1 404 Not Found\nContent-Type: text/html\nContent-Length: %s\nConnection: Close\n\n%s", "read error" , buf); //sizeof(buffer));
+    if (fclose(errorLogFile) != 0)
+    {
+        perror("ERROR: fclose failed to close result file");
+        return -1;
+    }
 
-  pthread_mutex_unlock(&accept_con_mutex);
-  return 0;
+    pthread_mutex_unlock(&accept_con_mutex);
+    return 0;
 }
 
