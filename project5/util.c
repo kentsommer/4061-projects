@@ -256,7 +256,7 @@ int return_result(int fd, char *content_type, char *buf, int numbytes)
         return -1;
     }
     fprintf(resultf, "HTTP/1.1 200 OK/nContent-Type:%s/nContent-Length:%d/nConnection: Close/n/n", content_type, numbytes);
-    if (fwrite(buf, 1, numbytes, resultf) != numbytes))
+    if (fwrite(buf, 1, numbytes, resultf) != numbytes)
     {
         perror("wrong number of bytes");
         return -1;
