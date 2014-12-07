@@ -164,10 +164,19 @@ void init(int port)
    - if the return value is negative, the thread calling
      accept_connection must exit by calling pthread_exit().
 ***********************************************/
-int accept_connection(void) {
+int accept_connection(void) 
+{
+  printf("Entered 'accept_connection' \n");
+  struct sockaddr_in  address;
+  int  length;
+  int conn = accept(sock,(struct sockaddr *) (&address), &length);
 
-   printf("Entered 'accept_connection' \n");
-
+  if(conn == -1)
+  {
+    perror("ERROR: Failed to accept connection: ");
+  }
+  
+  return conn;
 }
 
 /**********************************************
@@ -185,7 +194,8 @@ int accept_connection(void) {
      must NOT use a return_request or return_error function for that
      specific 'connection'.
 ************************************************/
-int get_request(int fd, char *filename) {
+int get_request(int fd, char *filename) 
+{
  printf("entered get_request \n");
 }
 
@@ -208,7 +218,9 @@ int get_request(int fd, char *filename) {
       - numbytes is the number of bytes the file takes up in buf
    - returns 0 on success, nonzero on failure.
 ************************************************/
-int return_result(int fd, char *content_type, char *buf, int numbytes) {
+int return_result(int fd, char *content_type, char *buf, int numbytes) 
+{
+
 }
 
 
