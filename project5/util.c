@@ -1,3 +1,10 @@
+/*CSci4061 F2014 Assignment 5
+*section: 4
+*date: 12/09/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
