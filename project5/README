@@ -1,0 +1,78 @@
+/*CSci4061 F2014 Assignment 5
+*section: 4
+*date: 12/09/14
+*names: Kent Sommer, Kanad Gupta, Xi Chen
+*id: somme282, kgupta, chen2806
+*/
+
+
+//////////////////////////////////
+////  Purpose of the program  ////
+//////////////////////////////////
+
+This program serves as a multithreaded web-server using POSIX threads.
+
+
+//////////////////////////////////
+////      How to Compile      ////
+//////////////////////////////////
+
+Navigate to the project directory and run: make
+To clean up the project simply run: make clean
+
+//////////////////////////////////
+/// How to Use from the Shell ////
+//////////////////////////////////
+
+Navigate to the project directory and run: ./web_server_http port path num_dispatch num_workers qlen
+
+In a seperate terminal run the command: wget -i <path-to-urls>/urls -O myres
+
+Requests will be logged to the web_server_log file
+
+//////////////////////////////////
+////  What this Program Does  ////
+//////////////////////////////////
+
+All of the following functions are implemented in util.c and used in server.c:
+
+init:
+   - initializes the connection acception/handling system
+   - THIS IS CALLED EXACTLY ONCE (not once per thread,
+     but exactly one time, in the main thread of your program)
+   - if init encounters any errors, it will call exit().
+
+accept_connection:
+   - returns a file descriptor for further request processing.
+   - if the return value is negative, the thread calling
+     accept_connection must exit by calling pthread_exit().
+
+get_request
+   - gets a specific request
+   - parameters:
+      - fd is the file descriptor obtained by accept_connection()
+      - filename is the location of a character buffer in which
+        this function should store the requested filename.
+   - returns 0 on success, nonzero on failure.
+
+return_result
+   - returns the contents of a file to the requesting client
+   - parameters:
+      - fd is the file descriptor obtained by accept_connection()
+      - content_type is a pointer to a string that indicates the
+        type of content being returned. possible types include
+        "text/html", "text/plain", "image/gif", "image/jpeg" cor-
+        responding to .html, .txt, .gif, .jpg files.
+      - buf is a pointer to a memory location where the requested
+        file has been read into memory (the heap). return_result
+        uses this memory location to return the result to the
+        user.
+      - numbytes is the number of bytes the file takes up in buf
+   - returns 0 on success, nonzero on failure.
+
+return_error
+   - returns an error message in response to a bad request
+   - parameters:
+      - fd is the file descriptor obtained by accept_connection()
+      - buf is a pointer to the location of the error text
+   - returns 0 on success, nonzero on failure.
